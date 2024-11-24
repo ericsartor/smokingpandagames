@@ -163,7 +163,7 @@ export class BatPlayer {
             const nearFood = this.food.some((food) => {
                 const between = Phaser.Math.Distance.BetweenPoints(food, this.sprite);
                 return between <= openMouthDistance && (
-                    (isMovingLeft && food.x < this.sprite.x) || (isMovingRight && food.x > this.sprite.x)
+                    (isMovingLeft && food.x < this.sprite.x) || (isMovingRight && food.x > this.sprite.x) || (!isMovingLeft || !isMovingRight)
                 );
             });
             
