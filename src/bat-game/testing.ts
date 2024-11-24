@@ -17,6 +17,9 @@ type Tile = Phaser.GameObjects.TileSprite;
 export class Testing extends Phaser.Scene {
 
     player: BatPlayer | null = null;
+    energyBar: Phaser.GameObjects.Rectangle | null = null;
+    maxEnergyBarWidth: number = 0;
+
     sheeps: Phaser.GameObjects.Group | null = null;
     sheepCount: Phaser.GameObjects.Text | null = null;
     platforms: Phaser.GameObjects.Group | null = null;
@@ -61,6 +64,9 @@ export class Testing extends Phaser.Scene {
             boostSpeed: 0.6,
             food: this.food,
             foodGroup,
+            energyPerFood: 50,
+            maxEnergy: 500,
+            energyLossPerSecond: 10,
         });
 
         // Set up camera
@@ -137,6 +143,31 @@ export class Testing extends Phaser.Scene {
             this.hitSheepBuffer.add(sprite);
         });
 
+        // Set up energy bar
+        const padding = 10;
+        this.maxEnergyBarWidth = getScreenBasedPixels(this, 0.33, 'width');
+        const energyBarHeight = getScreenBasedPixels(this, 0.05, 'height');
+        // const energyBarY = camBox.top + padding;
+        const energyBarX = camBox.right - padding;
+        const energyBarY = camBox.top + padding;
+        console.log(camBox);
+        const energyBarOutline = this.add.rectangle(
+            energyBarX - 1,
+            energyBarY - 1,
+            this.maxEnergyBarWidth + 2,
+            energyBarHeight + 2,
+            0x000000,
+        );
+        energyBarOutline.setOrigin(1, 0);
+        this.energyBar = this.add.rectangle(
+            energyBarX,
+            energyBarY,
+            this.maxEnergyBarWidth,
+            energyBarHeight,
+            0x00ff00,
+        );
+        this.energyBar.setOrigin(1, 0);
+
     }
 
     lastSheepTime = 0;
@@ -212,8 +243,22 @@ export class Testing extends Phaser.Scene {
         }
     }
 
-    update(time: number, deltaMs: number) {
-        const deltaSeconds = deltaMs / 1000;
+    updateEnergyBar() {
+        if (this.player === null) return;
+        if (this.energyBar === null) return;
+        this.energyBar.width = this.player.energy / this.player.maxEnergy * this.maxEnergyBarWidth;
+    }
+
+    checkGameOver() {
+        if (this.player === null) return;
+        if (this.player.energy <= 0) {
+            // TODO: do game over sequence
+        }
+    }
+
+    update(time: number) {
+        // Energy bar
+        this.updateEnergyBar();
 
         // Create food
        this.createFood(time);
