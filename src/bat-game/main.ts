@@ -7,7 +7,13 @@ if (gameEnv === 'dev') {
     setStartingScene(Testing);
 }
 
+
 export const startGame = () => {
+    const screenRatio = window.innerWidth / window.innerHeight;
+    const desiredRatio = 16/9;
+    const inverseRatio = 9/16;
+    const gameWidth = screenRatio > desiredRatio ? (window.innerHeight * desiredRatio) : window.innerWidth;
+    const gameHeight = gameWidth * inverseRatio;
     document.body.style.backgroundColor = '#000000';
     document.body.style.margin = '0px';
     document.body.style.padding = '0px';
@@ -17,8 +23,8 @@ export const startGame = () => {
     document.body.style.width = '100vw';
     document.body.style.height = '100vh';
     new Phaser.Game({
-        width: window.innerWidth,
-        height: window.innerWidth * (9/16),
+        width: gameWidth,
+        height: gameHeight,
         type: Phaser.AUTO,
         scene: [
             LoadingScene,
@@ -28,7 +34,7 @@ export const startGame = () => {
         physics: {
             default: 'arcade',
             arcade: {
-                debug: true,
+                // debug: true,
                 gravity: {
                     y: 600,
                     x: 0,
