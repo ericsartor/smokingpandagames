@@ -205,6 +205,7 @@ export class Testing extends Phaser.Scene {
             const foodY = yMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.4, 'height'));
             const food = new Fly(this, foodX, foodY, {
                 createdTime: time,
+                hitBoxStyle: 'overlap',
             });
             this.food.push(food);
             this.foodGroup.add(food.sprite);

@@ -30,6 +30,7 @@ registerCreateFunc((scene: Phaser.Scene) => {
 
 type FlyOptions = {
     createdTime: number;
+    hitBoxStyle: 'overlap' | 'normal';
 };
 export class Fly {
 
@@ -49,7 +50,11 @@ export class Fly {
         // Create physics sprite
         this.sprite = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
         this.sprite.body.setAllowGravity(false);
-        this.sprite.body.setCircle(this.sprite.width * 0.06, this.sprite.width * 0.04, this.sprite.height * 0.08);
+        if (options.hitBoxStyle === 'normal') {
+            this.sprite.body.setCircle(this.sprite.width * 0.06, this.sprite.width * 0.04, this.sprite.height * 0.08);
+        } else {
+            this.sprite.body.setCircle(this.sprite.width * 0.008, this.sprite.width * 0.1, this.sprite.height * 0.15);
+        }
         this.sprite.x = x;
         this.sprite.y = y;
         this.sprite.anims.play(IDLE_ANIM, true);
