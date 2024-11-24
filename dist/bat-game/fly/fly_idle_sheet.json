@@ -1,0 +1,30 @@
+{
+  "sprites": [
+    {
+      "fileName": "fly_-_color_merged-1.png",
+      "width": 160,
+      "height": 166,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "fly_-_color_merged-2.png",
+      "width": 160,
+      "height": 166,
+      "x": 160,
+      "y": 0
+    },
+    {
+      "fileName": "fly_-_color_merged-3.png",
+      "width": 160,
+      "height": 166,
+      "x": 0,
+      "y": 166
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 320,
+  "spriteSheetHeight": 332
+}
