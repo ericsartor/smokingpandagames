@@ -1,0 +1,30 @@
+{
+  "sprites": [
+    {
+      "fileName": "bat_eating_-_color_merged-1.png",
+      "width": 808,
+      "height": 522,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "bat_eating_-_color_merged-2.png",
+      "width": 808,
+      "height": 522,
+      "x": 808,
+      "y": 0
+    },
+    {
+      "fileName": "bat_eating_-_color_merged-3.png",
+      "width": 808,
+      "height": 522,
+      "x": 0,
+      "y": 522
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 1616,
+  "spriteSheetHeight": 1044
+}

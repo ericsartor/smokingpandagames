@@ -1,5 +1,6 @@
 import { Phaser } from "../barrel";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
+import { ExtendedSprite } from "../types/util";
 import { getScreenBasedPixels, getScreenBasedSpeed, scaleBasedOnCamera } from "../utils";
 
 const batFrameWidth = 808;
@@ -8,6 +9,7 @@ const batFrameHeight = 522;
 const IDLE_SHEET = 'sprite-bat-right';
 const PANICKED_SHEET = 'sprite-bat-panicked-right';
 const OPEN_MOUTH_SHEET = 'sprite-bat-open-mouth-right';
+const EATING_SHEET = 'sprite-bat-eating-right';
 registerLoadFunc((scene: Phaser.Scene) => {
     // Load spritesheet for idle
     scene.load.spritesheet(IDLE_SHEET, '/bat/bat_idle_sheet.png', {
@@ -26,6 +28,12 @@ registerLoadFunc((scene: Phaser.Scene) => {
         frameWidth: batFrameWidth,
         frameHeight: batFrameHeight,
     });
+    
+    // Load spritesheet for eating
+    scene.load.spritesheet(EATING_SHEET, '/bat/bat_eating_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
 });
 
 const ANIM_LENGTH = 4;
@@ -34,6 +42,7 @@ const PANICKED_FRAME_RATE = 11;
 const IDLE_ANIM = 'anim-bat-right';
 const PANICKED_ANIM = 'anim-bat-panicked-right';
 const OPEN_MOUTH_ANIM = 'anim-bat-open-mouth-right';
+const EATING_ANIM = 'anim-bat-eating-right';
 registerCreateFunc((scene: Phaser.Scene) => {
     // Set up flying animation
     scene.anims.create({
@@ -67,20 +76,36 @@ registerCreateFunc((scene: Phaser.Scene) => {
             ...scene.anims.generateFrameNumbers(OPEN_MOUTH_SHEET, { start: 1, end: 1 }),
         ],
     });
+
+    // Set up chewing flying animation
+    scene.anims.create({
+        key: EATING_ANIM,
+        frameRate: IDLE_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(EATING_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(EATING_SHEET, { start: 1, end: 1 }),
+        ],
+    });
 });
 
 type BatPlayerOptions = {
     baseSpeed: number;
     boostSpeed: number;
-    food: Phaser.Types.Math.Vector2Like[];
+    food: ExtendedSprite[];
+    foodGroup: Phaser.GameObjects.Group;
 };
 export class BatPlayer {
 
     scene: Phaser.Scene;
-    bat: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+    sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     baseSpeed: number;
     boostSpeed: number;
-    food: { x: number, y: number }[];
+    food: ExtendedSprite[];
+    foodGroup: Phaser.GameObjects.Group;
+    eating = false;
+    endEating: number | null = null;
+    currentTime = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -90,23 +115,36 @@ export class BatPlayer {
         scene.events.on('update', this.update, this);
 
         // Create physics sprite
-        this.bat = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
-        this.bat.body.setAllowGravity(false);
-        this.bat.setBounce(1);
-        this.bat.body.setCircle(this.bat.width * 0.25, this.bat.width * 0.25, this.bat.height * 0.06);
-        this.bat.x = x;
-        this.bat.y = y;
-        scaleBasedOnCamera(this.scene, this.bat, 0.15);
+        this.sprite = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
+        this.sprite.body.setAllowGravity(false);
+        this.sprite.setBounce(1);
+        this.sprite.body.setCircle(this.sprite.width * 0.25, this.sprite.width * 0.25, this.sprite.height * 0.06);
+        this.sprite.x = x;
+        this.sprite.y = y;
+        scaleBasedOnCamera(this.scene, this.sprite, 0.15);
 
         // Store speed
         this.baseSpeed = options.baseSpeed;
         this.boostSpeed = options.boostSpeed;
 
-        // Store food
+        // Handle food
         this.food = options.food;
+        this.foodGroup = options.foodGroup;
+        this.scene.physics.add.collider(this.sprite, this.foodGroup, (_, food) => {
+            food.destroy();
+            const foodIndex = this.food.findIndex((f) => f.sprite === food);
+            if (foodIndex !== -1) {
+                this.food.splice(foodIndex, 1);
+            }
+            this.eating = true;
+            this.endEating = this.currentTime + 1000;
+        });
     }
 
-    update() {
+    update(time: number) {
+        // Update time
+        this.currentTime = time;
+
         // Handle input
         if (this.scene.input.keyboard) {
             // Define inputs
@@ -123,21 +161,30 @@ export class BatPlayer {
             // Check food proximity
             const openMouthDistance = getScreenBasedPixels(this.scene, 0.1, 'width');
             const nearFood = this.food.some((food) => {
-                const between = Phaser.Math.Distance.BetweenPoints(food, this.bat);
+                const between = Phaser.Math.Distance.BetweenPoints(food, this.sprite);
                 return between <= openMouthDistance && (
-                    (isMovingLeft && food.x < this.bat.x) || (isMovingRight && food.x > this.bat.x)
+                    (isMovingLeft && food.x < this.sprite.x) || (isMovingRight && food.x > this.sprite.x)
                 );
             });
             
+            // Handle eating
+            if (this.eating && this.endEating !== null) {
+                if (this.endEating <= time) {
+                    this.eating = false;
+                    this.endEating = null;
+                }
+            }
+
             // Handle animation
             const anim = (() => {
                 if (nearFood) return OPEN_MOUTH_ANIM;
+                if (this.eating) return EATING_ANIM;
                 if (isBoosting) return PANICKED_ANIM
                 return IDLE_ANIM;
             })();
-            const currentAnimFrame = this.bat.anims.currentFrame !== null ? (this.bat.anims.currentFrame.index % ANIM_LENGTH) : null;
-            const changingAnims = this.bat.anims.currentAnim ? this.bat.anims.currentAnim.key !== anim : false;
-            this.bat.anims.play({
+            const currentAnimFrame = this.sprite.anims.currentFrame !== null ? (this.sprite.anims.currentFrame.index % ANIM_LENGTH) : null;
+            const changingAnims = this.sprite.anims.currentAnim ? this.sprite.anims.currentAnim.key !== anim : false;
+            this.sprite.anims.play({
                 key: anim,
                 startFrame: (changingAnims && currentAnimFrame !== null) ? currentAnimFrame : undefined,
             }, true);
@@ -147,22 +194,22 @@ export class BatPlayer {
             
             // Horizontal movement
             if (isMovingLeft) {
-                this.bat.setFlipX(true);
-                this.bat.setVelocityX(-speed);
+                this.sprite.setFlipX(true);
+                this.sprite.setVelocityX(-speed);
             } else if (isMovingRight) {
-                this.bat.setFlipX(false);
-                this.bat.setVelocityX(speed);
+                this.sprite.setFlipX(false);
+                this.sprite.setVelocityX(speed);
             } else {
-                this.bat.setVelocityX(0);
+                this.sprite.setVelocityX(0);
             }
 
             // Vertical movement
             if (isMovingUp) {
-                this.bat.setVelocityY(-speed);
+                this.sprite.setVelocityY(-speed);
             } else if (isMovingDown) {
-                this.bat.setVelocityY(speed);
+                this.sprite.setVelocityY(speed);
             } else {
-                this.bat.setVelocityY(0);
+                this.sprite.setVelocityY(0);
             }
         }
     }

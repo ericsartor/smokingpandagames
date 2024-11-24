@@ -34,7 +34,7 @@ type FlyOptions = {
 export class Fly {
 
     scene: Phaser.Scene;
-    fly: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+    sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     x: number;
     y: number;
     createdTime: number;
@@ -47,13 +47,13 @@ export class Fly {
         scene.events.on('update', this.update, this);
 
         // Create physics sprite
-        this.fly = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
-        this.fly.body.setAllowGravity(false);
-        this.fly.body.setCircle(this.fly.width * 0.06, this.fly.width * 0.04, this.fly.height * 0.08);
-        this.fly.x = x;
-        this.fly.y = y;
-        this.fly.anims.play(IDLE_ANIM, true);
-        scaleBasedOnCamera(this.scene, this.fly, 0.05);
+        this.sprite = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
+        this.sprite.body.setAllowGravity(false);
+        this.sprite.body.setCircle(this.sprite.width * 0.06, this.sprite.width * 0.04, this.sprite.height * 0.08);
+        this.sprite.x = x;
+        this.sprite.y = y;
+        this.sprite.anims.play(IDLE_ANIM, true);
+        scaleBasedOnCamera(this.scene, this.sprite, 0.05);
 
         // Store base position
         this.x = x;
@@ -66,8 +66,8 @@ export class Fly {
         const speed = getScreenBasedSpeed(this.scene, 0.0002);
         const speedXSine = speed * (Math.sin(timeElapsed * 0.005));
         const speedYSine = speed * (Math.sin(timeElapsed * 0.01));
-        this.fly.x += speedXSine;
-        this.fly.y += speedYSine;
+        this.sprite.x += speedXSine;
+        this.sprite.y += speedYSine;
     }
 
 }

@@ -3,6 +3,7 @@ import { BatPlayer } from './entities/bat';
 import { Fish } from './entities/fish';
 import { Fly } from './entities/fly';
 import { createSheep, loadSheep } from './entities/sheep';
+import { ExtendedSprite } from './types/util';
 import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, getSpriteBox, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera, setScreenBasedGravity } from './utils';
 
 const SHEEP_SCALE = 0.1;
@@ -31,7 +32,8 @@ export class Testing extends Phaser.Scene {
     lastFishTime = 0;
     fish: Fish[] = []
 
-    food: Fly[] = [];
+    food: ExtendedSprite[] = [];
+    foodGroup: Phaser.GameObjects.Group | null = null;
 
     constructor() {
         super('Testing');
@@ -49,11 +51,16 @@ export class Testing extends Phaser.Scene {
         // Initialize gravity
         setScreenBasedGravity(this, 0, 1);
 
+        // Set up food group
+        const foodGroup = this.add.group();
+        this.foodGroup = foodGroup;
+
         // Create bat player
         this.player = new BatPlayer(this, 0, 0, {
             baseSpeed: 0.3,
             boostSpeed: 0.6,
             food: this.food,
+            foodGroup,
         });
 
         // Set up camera
@@ -123,7 +130,7 @@ export class Testing extends Phaser.Scene {
 
         // Set up collision for sheep and platforms, also sheep and player
         this.physics.add.collider(this.sheeps, this.platforms);
-        this.physics.add.collider(this.sheeps, this.player.bat, (sheep) => {
+        this.physics.add.collider(this.sheeps, this.player.sprite, (sheep) => {
             const sprite = sheep as Sprite;
             if (this.hitSheepBuffer.has(sprite)) return;
             this.hitCount++;
@@ -188,15 +195,27 @@ export class Testing extends Phaser.Scene {
         });
     }
 
+    createFood(time: number) {
+        if (this.foodGroup === null) return;
+        if (this.player === null) return;
+        if (this.food.length < 1) {
+            const xMult = this.player.sprite.x > 0 ? -1 : 1;
+            const foodX = xMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.4, 'width'));
+            const yMult = this.player.sprite.y > 0 ? -1 : 1;
+            const foodY = yMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.4, 'height'));
+            const food = new Fly(this, foodX, foodY, {
+                createdTime: time,
+            });
+            this.food.push(food);
+            this.foodGroup.add(food.sprite);
+        }
+    }
+
     update(time: number, deltaMs: number) {
         const deltaSeconds = deltaMs / 1000;
 
         // Create food
-        if (this.food.length < 1) {
-            this.food.push(new Fly(this, 0, 0, {
-                createdTime: time,
-            }));
-        }
+       this.createFood(time);
 
         if (this.player) {
             this.createMoreSheep(time);
