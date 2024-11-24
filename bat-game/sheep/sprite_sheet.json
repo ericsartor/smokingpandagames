@@ -1,0 +1,121 @@
+{
+  "sprites": [
+    {
+      "fileName": "a.png",
+      "width": 504,
+      "height": 556,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "b.png",
+      "width": 504,
+      "height": 556,
+      "x": 504,
+      "y": 0
+    },
+    {
+      "fileName": "c.png",
+      "width": 504,
+      "height": 556,
+      "x": 1008,
+      "y": 0
+    },
+    {
+      "fileName": "d.png",
+      "width": 504,
+      "height": 556,
+      "x": 1512,
+      "y": 0
+    },
+    {
+      "fileName": "e.png",
+      "width": 504,
+      "height": 556,
+      "x": 0,
+      "y": 556
+    },
+    {
+      "fileName": "f.png",
+      "width": 504,
+      "height": 556,
+      "x": 504,
+      "y": 556
+    },
+    {
+      "fileName": "g.png",
+      "width": 504,
+      "height": 556,
+      "x": 1008,
+      "y": 556
+    },
+    {
+      "fileName": "h.png",
+      "width": 504,
+      "height": 556,
+      "x": 1512,
+      "y": 556
+    },
+    {
+      "fileName": "i.png",
+      "width": 504,
+      "height": 556,
+      "x": 0,
+      "y": 1112
+    },
+    {
+      "fileName": "j.png",
+      "width": 504,
+      "height": 556,
+      "x": 504,
+      "y": 1112
+    },
+    {
+      "fileName": "k.png",
+      "width": 504,
+      "height": 556,
+      "x": 1008,
+      "y": 1112
+    },
+    {
+      "fileName": "l.png",
+      "width": 504,
+      "height": 556,
+      "x": 1512,
+      "y": 1112
+    },
+    {
+      "fileName": "m.png",
+      "width": 504,
+      "height": 556,
+      "x": 0,
+      "y": 1668
+    },
+    {
+      "fileName": "n.png",
+      "width": 504,
+      "height": 556,
+      "x": 504,
+      "y": 1668
+    },
+    {
+      "fileName": "o.png",
+      "width": 504,
+      "height": 556,
+      "x": 1008,
+      "y": 1668
+    },
+    {
+      "fileName": "p.png",
+      "width": 504,
+      "height": 556,
+      "x": 1512,
+      "y": 1668
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 2016,
+  "spriteSheetHeight": 2224
+}
