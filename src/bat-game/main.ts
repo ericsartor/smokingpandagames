@@ -4,7 +4,7 @@ import { Testing } from "./testing";
 const gameEnv = 'dev';
 
 if (gameEnv === 'dev') {
-    setStartingScene(Testing);
+    setStartingScene(new Testing());
 }
 
 

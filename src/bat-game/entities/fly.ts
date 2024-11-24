@@ -1,4 +1,3 @@
-import { Phaser } from "../barrel";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { getScreenBasedSpeed, scaleBasedOnCamera } from "../utils";
 

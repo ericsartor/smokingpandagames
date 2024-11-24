@@ -1,4 +1,3 @@
-import { Phaser } from "../barrel";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { ExtendedSprite } from "../types/util";
 import { getScreenBasedPixels, getScreenBasedSpeed, scaleBasedOnCamera } from "../utils";

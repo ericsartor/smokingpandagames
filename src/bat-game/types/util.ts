@@ -1,5 +1,3 @@
-import { Phaser } from '../barrel';
-
 export type ExtendedSprite = {
     x: number;
     y: number;

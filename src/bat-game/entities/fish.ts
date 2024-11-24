@@ -155,7 +155,7 @@ export class Fish {
         scaleBasedOnCamera(scene, this.spit, 0.04);
     }
 
-    update(time: number, delta: number) {
+    update(time: number) {
 
         const totalTime = this.upTime + this.stayTime + this.downTime;
         
