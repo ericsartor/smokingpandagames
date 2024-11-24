@@ -94,6 +94,9 @@ type BatPlayerOptions = {
     boostSpeed: number;
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
+    energyPerFood: number;
+    maxEnergy: number;
+    energyLossPerSecond: number;
 };
 export class BatPlayer {
 
@@ -106,6 +109,10 @@ export class BatPlayer {
     eating = false;
     endEating: number | null = null;
     currentTime = 0;
+    maxEnergy: number;
+    energy: number;
+    energyPerFood: number;
+    energyLossPerSecond: number;
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -128,9 +135,14 @@ export class BatPlayer {
         this.boostSpeed = options.boostSpeed;
 
         // Handle food
+        this.energyLossPerSecond = options.energyLossPerSecond;
+        this.maxEnergy = options.maxEnergy;
+        this.energy = this.maxEnergy;
+        this.energyPerFood = options.energyPerFood;
         this.food = options.food;
         this.foodGroup = options.foodGroup;
         this.scene.physics.add.collider(this.sprite, this.foodGroup, (_, food) => {
+            this.energy = Math.min(this.maxEnergy, this.energy + this.energyPerFood);
             food.destroy();
             const foodIndex = this.food.findIndex((f) => f.sprite === food);
             if (foodIndex !== -1) {
@@ -141,9 +153,11 @@ export class BatPlayer {
         });
     }
 
-    update(time: number) {
+    update(time: number, deltaMs: number) {
         // Update time
         this.currentTime = time;
+
+        const deltaSeconds = deltaMs / 1000;
 
         // Handle input
         if (this.scene.input.keyboard) {
@@ -157,6 +171,9 @@ export class BatPlayer {
             const isMovingRight = !controls.left.isDown && controls.right.isDown;
             const isMovingUp = controls.up.isDown && !controls.down.isDown;
             const isMovingDown = !controls.up.isDown && controls.down.isDown;
+
+            // Handle energy
+            this.energy = Math.max(0, this.energy - (this.energyLossPerSecond * deltaSeconds * (isBoosting ? 2 : 1)));
 
             // Check food proximity
             const openMouthDistance = getScreenBasedPixels(this.scene, 0.1, 'width');
