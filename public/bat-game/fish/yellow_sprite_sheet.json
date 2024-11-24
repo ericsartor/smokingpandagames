@@ -1,0 +1,37 @@
+{
+  "sprites": [
+    {
+      "fileName": "yellowa.png",
+      "width": 579,
+      "height": 508,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "yellowc.png",
+      "width": 579,
+      "height": 508,
+      "x": 579,
+      "y": 0
+    },
+    {
+      "fileName": "yellowd.png",
+      "width": 579,
+      "height": 508,
+      "x": 0,
+      "y": 508
+    },
+    {
+      "fileName": "yelowb.png",
+      "width": 579,
+      "height": 508,
+      "x": 579,
+      "y": 508
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 1158,
+  "spriteSheetHeight": 1016
+}

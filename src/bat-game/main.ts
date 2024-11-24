@@ -1,7 +1,11 @@
+import { LoadingScene, scenes, setStartingScene } from "./loading";
 import { Testing } from "./testing";
 
+const gameEnv = 'dev';
 
-const startingScene = Testing;
+if (gameEnv === 'dev') {
+    setStartingScene(Testing);
+}
 
 export const startGame = () => {
     document.body.style.backgroundColor = '#000000';
@@ -16,7 +20,10 @@ export const startGame = () => {
         width: window.innerWidth,
         height: window.innerWidth * (9/16),
         type: Phaser.AUTO,
-        scene: startingScene,
+        scene: [
+            LoadingScene,
+            ...scenes,
+        ],
         backgroundColor: '#ffffff',
         physics: {
             default: 'arcade',

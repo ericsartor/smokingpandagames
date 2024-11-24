@@ -59,8 +59,35 @@ export const scaleBasedOnCamera = (
     }
 };
 
+interface CanBeTileScaled {
+    setTileScale(x?: number, y?: number): any;
+    width: number;
+}
+type TileScaleResult = {
+    pixels: number;
+    scale: number;
+};
+export const scaleTileBasedOnCamera = (
+    cameraOrScene: Phaser.Cameras.Scene2D.Camera | Phaser.Scene,
+    sprite: CanBeTileScaled,
+    desiredWidthScale: number,
+): TileScaleResult => {
+    const camera = cameraOrScene instanceof Phaser.Scene ? cameraOrScene.cameras.main : cameraOrScene;
+    const desiredPixelWidth = camera.width * desiredWidthScale;
+    const pixelDiff = desiredPixelWidth / sprite.width;
+    sprite.setTileScale(pixelDiff);
+    return {
+        scale: pixelDiff,
+        pixels: pixelDiff * sprite.width,
+    }
+};
+
+const speedCache: { [speed: number]: number } = {};
 export const getScreenBasedSpeed = (scene: Phaser.Scene, speed: number) => {
-    return scene.game.canvas.width * speed;
+    if (speedCache[speed] !== undefined) return speedCache[speed];
+    const result = scene.game.canvas.width * speed;
+    speedCache[speed] = result;
+    return result;
 };
 
 export const setScreenBasedGravity = (scene: Phaser.Scene, gravityX: number, gravityY: number) => {
