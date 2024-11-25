@@ -1,12 +1,13 @@
 import { LoadingScene, scenes, setStartingScene } from "./loading";
 import { Testing } from "./testing";
 
-const gameEnv = 'dev';
+const env = location.hostname === 'smokingpandagames.com' ? 'prod' : 'dev';
 
-if (gameEnv === 'dev') {
+if (env === 'prod') {
+    setStartingScene(new Testing());
+} else if (env === 'dev') {
     setStartingScene(new Testing());
 }
-
 
 export const startGame = () => {
     const screenRatio = window.innerWidth / window.innerHeight;
