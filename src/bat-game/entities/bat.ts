@@ -7,8 +7,10 @@ const batFrameHeight = 522;
 
 const IDLE_SHEET = 'sprite-bat-right';
 const PANICKED_SHEET = 'sprite-bat-panicked-right';
+const OPEN_MOUTH_PANIC_SHEET = 'sprite-bat-open-mouth-panic-right';
+const CHEWING_PANIC_SHEET = 'sprite-bat-chewing-panic-right';
 const OPEN_MOUTH_SHEET = 'sprite-bat-open-mouth-right';
-const EATING_SHEET = 'sprite-bat-eating-right';
+const CHEWING_SHEET = 'sprite-bat-chewing-right';
 registerLoadFunc((scene: Phaser.Scene) => {
     // Load spritesheet for idle
     scene.load.spritesheet(IDLE_SHEET, '/bat/bat_idle_sheet.png', {
@@ -28,8 +30,20 @@ registerLoadFunc((scene: Phaser.Scene) => {
         frameHeight: batFrameHeight,
     });
     
-    // Load spritesheet for eating
-    scene.load.spritesheet(EATING_SHEET, '/bat/bat_eating_sheet.png', {
+    // Load spritesheet for chewing
+    scene.load.spritesheet(CHEWING_SHEET, '/bat/bat_chewing_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for open mouth + panic
+    scene.load.spritesheet(OPEN_MOUTH_PANIC_SHEET, '/bat/bat_open_mouth_panic_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for chewing + panic
+    scene.load.spritesheet(CHEWING_PANIC_SHEET, '/bat/bat_chewing_panic_sheet.png', {
         frameWidth: batFrameWidth,
         frameHeight: batFrameHeight,
     });
@@ -39,11 +53,13 @@ const ANIM_LENGTH = 4;
 const IDLE_FRAME_RATE = 9;
 const PANICKED_FRAME_RATE = 11;
 const IDLE_ANIM = 'anim-bat-right';
+const OPEN_MOUTH_PANIC_ANIM = 'anim-bat-open-mouth-panic-right';
+const CHEWING_PANIC_ANIM = 'anim-bat-chewing-panic-right';
 const PANICKED_ANIM = 'anim-bat-panicked-right';
 const OPEN_MOUTH_ANIM = 'anim-bat-open-mouth-right';
-const EATING_ANIM = 'anim-bat-eating-right';
+const CHEWING_ANIM = 'anim-bat-chewing-right';
 registerCreateFunc((scene: Phaser.Scene) => {
-    // Set up flying animation
+    // Set up idle animation
     scene.anims.create({
         key: IDLE_ANIM,
         frameRate: IDLE_FRAME_RATE,
@@ -54,7 +70,7 @@ registerCreateFunc((scene: Phaser.Scene) => {
         ],
     });
 
-    // Set up panicked flying animation
+    // Set up panicked animation
     scene.anims.create({
         key: PANICKED_ANIM,
         frameRate: PANICKED_FRAME_RATE,
@@ -65,7 +81,7 @@ registerCreateFunc((scene: Phaser.Scene) => {
         ],
     });
 
-    // Set up open mouth flying animation
+    // Set up open mouth animation
     scene.anims.create({
         key: OPEN_MOUTH_ANIM,
         frameRate: IDLE_FRAME_RATE,
@@ -76,14 +92,36 @@ registerCreateFunc((scene: Phaser.Scene) => {
         ],
     });
 
-    // Set up chewing flying animation
+    // Set up chewing animation
     scene.anims.create({
-        key: EATING_ANIM,
+        key: CHEWING_ANIM,
         frameRate: IDLE_FRAME_RATE,
         repeat: -1,
         frames: [
-            ...scene.anims.generateFrameNumbers(EATING_SHEET, { start: 0, end: 2 }),
-            ...scene.anims.generateFrameNumbers(EATING_SHEET, { start: 1, end: 1 }),
+            ...scene.anims.generateFrameNumbers(CHEWING_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(CHEWING_SHEET, { start: 1, end: 1 }),
+        ],
+    });
+
+    // Set up open mouth + panic animation
+    scene.anims.create({
+        key: OPEN_MOUTH_PANIC_ANIM,
+        frameRate: PANICKED_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(OPEN_MOUTH_PANIC_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(OPEN_MOUTH_PANIC_SHEET, { start: 1, end: 1 }),
+        ],
+    });
+
+    // Set up chewing + panic animation
+    scene.anims.create({
+        key: CHEWING_PANIC_ANIM,
+        frameRate: PANICKED_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(CHEWING_PANIC_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(CHEWING_PANIC_SHEET, { start: 1, end: 1 }),
         ],
     });
 });
@@ -105,8 +143,8 @@ export class BatPlayer {
     boostSpeed: number;
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
-    eating = false;
-    endEating: number | null = null;
+    chewing = false;
+    endChewing: number | null = null;
     currentTime = 0;
     maxEnergy: number;
     energy: number;
@@ -147,8 +185,8 @@ export class BatPlayer {
             if (foodIndex !== -1) {
                 this.food.splice(foodIndex, 1);
             }
-            this.eating = true;
-            this.endEating = this.currentTime + 1000;
+            this.chewing = true;
+            this.endChewing = this.currentTime + 1000;
         });
     }
 
@@ -183,19 +221,23 @@ export class BatPlayer {
                 );
             });
             
-            // Handle eating
-            if (this.eating && this.endEating !== null) {
-                if (this.endEating <= time) {
-                    this.eating = false;
-                    this.endEating = null;
+            // Handle chewing
+            if (this.chewing && this.endChewing !== null) {
+                if (this.endChewing <= time) {
+                    this.chewing = false;
+                    this.endChewing = null;
                 }
             }
 
             // Handle animation
             const anim = (() => {
+                if (isBoosting) {
+                    if (nearFood) return OPEN_MOUTH_PANIC_ANIM;
+                    if (this.chewing) return CHEWING_PANIC_ANIM;
+                    return PANICKED_ANIM
+                }
                 if (nearFood) return OPEN_MOUTH_ANIM;
-                if (this.eating) return EATING_ANIM;
-                if (isBoosting) return PANICKED_ANIM
+                if (this.chewing) return CHEWING_ANIM;
                 return IDLE_ANIM;
             })();
             const currentAnimFrame = this.sprite.anims.currentFrame !== null ? (this.sprite.anims.currentFrame.index % ANIM_LENGTH) : null;
