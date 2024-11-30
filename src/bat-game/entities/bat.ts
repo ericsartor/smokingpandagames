@@ -129,6 +129,8 @@ registerCreateFunc((scene: Phaser.Scene) => {
 type BatPlayerOptions = {
     baseSpeed: number;
     boostSpeed: number;
+    boostDuration: number; // seconds
+    boostFrequency: number; // seconds
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
     energyPerFood: number;
@@ -141,6 +143,10 @@ export class BatPlayer {
     sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     baseSpeed: number;
     boostSpeed: number;
+    boostDuration: number;
+    boostFrequency: number;
+    boostEnd = 0;
+    nextBoostAvailable = 0;
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
     chewing = false;
@@ -170,6 +176,8 @@ export class BatPlayer {
         // Store speed
         this.baseSpeed = options.baseSpeed;
         this.boostSpeed = options.boostSpeed;
+        this.boostDuration = options.boostDuration;
+        this.boostFrequency = options.boostFrequency;
 
         // Handle food
         this.energyLossPerSecond = options.energyLossPerSecond;
@@ -202,8 +210,14 @@ export class BatPlayer {
             const controls = this.scene.input.keyboard.createCursorKeys();
             const boost = this.scene.input.keyboard.addKey('SPACE');
 
-            // Decide if boosting
-            const isBoosting = boost.isDown;
+            // Handle boost
+            if (boost.isDown && time >= this.nextBoostAvailable) {
+                this.boostEnd = time + (this.boostDuration * 1000);
+                this.nextBoostAvailable = this.boostEnd + (this.boostFrequency * 1000);
+            }
+            const isBoosting = time < this.boostEnd;
+
+            // Check movement
             const isMovingLeft = controls.left.isDown && !controls.right.isDown;
             const isMovingRight = !controls.left.isDown && controls.right.isDown;
             const isMovingUp = controls.up.isDown && !controls.down.isDown;

@@ -2,9 +2,9 @@ import { Phaser } from './barrel';
 import { BatPlayer } from './entities/bat';
 import { Fish } from './entities/fish';
 import { Fly } from './entities/fly';
-import { createSheep, loadSheep } from './entities/sheep';
+import { Sheep } from './entities/sheep';
 import { ExtendedSprite } from './types/util';
-import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, getSpriteBox, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera, setScreenBasedGravity } from './utils';
+import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera, setScreenBasedGravity } from './utils';
 
 const SHEEP_SCALE = 0.1;
 const SHEEP_SPEED_RANGE_MIN = 0.2;
@@ -19,6 +19,8 @@ export class Testing extends Phaser.Scene {
     player: BatPlayer | null = null;
     energyBar: Phaser.GameObjects.Rectangle | null = null;
     maxEnergyBarWidth: number = 0;
+    dashBar: Phaser.GameObjects.Rectangle | null = null;
+    maxDashBarWidth: number = 0;
 
     sheeps: Phaser.GameObjects.Group | null = null;
     sheepCount: Phaser.GameObjects.Text | null = null;
@@ -30,7 +32,6 @@ export class Testing extends Phaser.Scene {
     hitSheepBuffer = new Set<Sprite>();
     
     waters: Phaser.GameObjects.Group | null = null;
-    waterMaxSpeed = 0.005;
 
     lastFishTime = 0;
     fish: Fish[] = []
@@ -44,15 +45,49 @@ export class Testing extends Phaser.Scene {
 
     preload() {
         this.load.baseURL = '/bat-game';
-        this.load.image('test-platform', '/test-assets/platform.png');
         this.load.image('water', '/water.png');
-        loadSheep(this);
+        this.load.image('sky', '/backgrounds/sky.png');
+        this.load.image('cliff_right', '/backgrounds/cliff_right.png');
     }
 
     create() {
 
         // Initialize gravity
         setScreenBasedGravity(this, 0, 1);
+
+        // Set up background
+        const sky = this.add.image(0, 0, 'sky');
+        sky.setDepth(-Infinity)
+
+        // Create platform group
+        const platformGroup = this.add.group();
+        this.platforms = platformGroup;
+
+        // Set up cliffs
+        const jutOut = SHEEP_SCALE * this.cameras.main.width;
+        const leftPlatform = this.physics.add.image(0, 0, 'cliff_right');
+        leftPlatform.setFlipX(true);
+        const rightPlatform = this.physics.add.image(0, 0, 'cliff_right');
+        const camBox = getCameraBox(this);
+        [leftPlatform, rightPlatform].forEach((platform, index) => {
+            platform.body.setAllowGravity(false);
+            platform.setPushable(false);
+            platformGroup.add(platform);
+            platform.y = camBox.top + jutOut;
+            platform.setSize(
+                getScreenBasedPixels(this, 2, 'width'),
+                getScreenBasedPixels(this, 0.05, 'height'),
+            );
+            platform.setOffset(
+                getScreenBasedPixels(this, index === 0 ? -0.9 : 0, 'width'),
+                getScreenBasedPixels(this, 0.01, 'height'),
+            );
+            scaleBasedOnCamera(this, platform, 0.25);
+        });
+        leftPlatform.setOrigin(0, 0);
+        leftPlatform.x = camBox.left;
+        rightPlatform.setOrigin(1, 0);
+        rightPlatform.x = camBox.right;
 
         // Set up food group
         const foodGroup = this.add.group();
@@ -62,6 +97,8 @@ export class Testing extends Phaser.Scene {
         this.player = new BatPlayer(this, 0, 0, {
             baseSpeed: 0.3,
             boostSpeed: 0.6,
+            boostDuration: 0.5,
+            boostFrequency: 3,
             food: this.food,
             foodGroup,
             energyPerFood: 50,
@@ -76,7 +113,7 @@ export class Testing extends Phaser.Scene {
         this.sheeps = this.add.group();
 
         // Create water
-        const waterStartY = getScreenBasedPixels(this, 0.35, 'height');
+        const waterStartY = getScreenBasedPixels(this, 0.42, 'height');
         const waterWidth = getScreenBasedPixels(this, 1, 'width');
         this.waters = this.add.group([
             this.add.tileSprite(
@@ -111,29 +148,6 @@ export class Testing extends Phaser.Scene {
             }
         });
 
-        // Create platform group
-        const platformGroup = this.add.group();
-        this.platforms = platformGroup;
-
-        // Set up test platforms
-        const jutOut = SHEEP_SCALE * this.cameras.main.width;
-        const leftPlatform = this.physics.add.image(0, 0, 'test-platform');
-        const rightPlatform = this.physics.add.image(0, 0, 'test-platform');
-        [leftPlatform, rightPlatform].forEach((platform) => {
-            platform.body.setAllowGravity(false);
-            platform.setPushable(false);
-            platformGroup.add(platform);
-        });
-        const camBox = getCameraBox(this);
-        scaleBasedOnCamera(this, leftPlatform, 0.2);
-        leftPlatform.setOrigin(1, 0);
-        leftPlatform.x = camBox.left + jutOut;
-        leftPlatform.y = camBox.top + jutOut;
-        scaleBasedOnCamera(this, rightPlatform, 0.2);
-        rightPlatform.setOrigin(0, 0);
-        rightPlatform.x = camBox.right - jutOut;
-        rightPlatform.y = camBox.top + jutOut;
-
         // Set up collision for sheep and platforms, also sheep and player
         this.physics.add.collider(this.sheeps, this.platforms);
         this.physics.add.collider(this.sheeps, this.player.sprite, (sheep) => {
@@ -147,10 +161,8 @@ export class Testing extends Phaser.Scene {
         const padding = 10;
         this.maxEnergyBarWidth = getScreenBasedPixels(this, 0.33, 'width');
         const energyBarHeight = getScreenBasedPixels(this, 0.05, 'height');
-        // const energyBarY = camBox.top + padding;
         const energyBarX = camBox.right - padding;
         const energyBarY = camBox.top + padding;
-        console.log(camBox);
         const energyBarOutline = this.add.rectangle(
             energyBarX - 1,
             energyBarY - 1,
@@ -168,6 +180,28 @@ export class Testing extends Phaser.Scene {
         );
         this.energyBar.setOrigin(1, 0);
 
+        // Set up boost bar
+        this.maxDashBarWidth = getScreenBasedPixels(this, 0.1, 'width');
+        const dashBarHeight = getScreenBasedPixels(this, 0.025, 'height');
+        const dashBarX = camBox.right - padding;
+        const dashBarY = energyBarY + energyBarHeight + padding;
+        const dashBarOutline = this.add.rectangle(
+            dashBarX - 1,
+            dashBarY - 1,
+            this.maxDashBarWidth + 2,
+            dashBarHeight + 2,
+            0x000000,
+        );
+        dashBarOutline.setOrigin(1, 0);
+        this.dashBar = this.add.rectangle(
+            dashBarX,
+            dashBarY,
+            this.maxDashBarWidth,
+            dashBarHeight,
+            0xff0000,
+        );
+        this.dashBar.setOrigin(1, 0);
+
     }
 
     lastSheepTime = 0;
@@ -178,38 +212,28 @@ export class Testing extends Phaser.Scene {
         }
         if (!this.player || !this.sheeps || !this.platforms) return;
         if (time - this.lastSheepTime > SHEEP_SPAWN_RATE) {
-            // Create sheep
-            const sheep = createSheep(this);
-
-            // Scale
-            scaleBasedOnCamera(this, sheep, SHEEP_SCALE);
-            
-            // Pick side
+            // Generate sheep info
+            const size = 0.1;
             const side = Math.random() >= 0.5 ? 'right' : 'left';
-
-            // Set location/speed/direction
-            const sheepBox = getSpriteBox(sheep);
-            const camBox = getCameraBox(this);
             const speed = Phaser.Math.Between(
                 getScreenBasedSpeed(this, SHEEP_SPEED_RANGE_MIN),
                 getScreenBasedSpeed(this, SHEEP_SPEED_RANGE_MAX),
             );
-            if (side === 'left') {
-                sheep.x = camBox.left - sheepBox.width;
-                sheep.setVelocityX(speed);
-                sheep.setFlipX(true);
-            } else {
-                sheep.x = camBox.right + sheepBox.width;
-                sheep.setVelocityX(-speed);
-            }
+            const camBox = getCameraBox(this);
+            const sheepWidth = getScreenBasedPixels(this, 0.1, 'width');
+            const x = side === 'left' ? (camBox.left - sheepWidth) : (camBox.right + sheepWidth);
             const platform = this.platforms.getChildren()[0] as Sprite;
-            if (platform) {
-                sheep.y = platform.y - sheepBox.height / 2;
-            } else {
-                sheep.y = camBox.top;
-            }
-            sheep.setBounce(0);
-            this.sheeps.add(sheep);
+            const y = platform.y - sheepWidth;
+
+            // Create sheep
+            const sheep = new Sheep(this, x, y, {
+                direction: side === 'left' ? 'right' : 'left',
+                size,
+                speed,
+            });
+
+            // Track sheep
+            this.sheeps.add(sheep.sprite);
             this.lastSheepTime = time;
         }
     }
@@ -233,10 +257,10 @@ export class Testing extends Phaser.Scene {
             const xMult = this.player.sprite.x > 0 ? -1 : 1;
             const foodX = xMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.4, 'width'));
             const yMult = this.player.sprite.y > 0 ? -1 : 1;
-            const foodY = yMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.4, 'height'));
+            const foodY = yMult * Phaser.Math.Between(0, getScreenBasedPixels(this, 0.35, 'height'));
             const food = new Fly(this, foodX, foodY, {
                 createdTime: time,
-                hitBoxStyle: 'overlap',
+                hitBoxStyle: 'normal',
             });
             this.food.push(food);
             this.foodGroup.add(food.sprite);
@@ -247,6 +271,15 @@ export class Testing extends Phaser.Scene {
         if (this.player === null) return;
         if (this.energyBar === null) return;
         this.energyBar.width = this.player.energy / this.player.maxEnergy * this.maxEnergyBarWidth;
+    }
+
+    updateDashBar(time: number) {
+        if (this.player === null) return;
+        if (this.dashBar === null) return;
+        const total = this.player.nextBoostAvailable - this.player.boostEnd;
+        const remaining = this.player.nextBoostAvailable - time;
+        const percent = Math.max(0, Math.min(1, remaining / total));
+        this.dashBar.width = percent * this.maxDashBarWidth;
     }
 
     checkGameOver() {
@@ -260,8 +293,11 @@ export class Testing extends Phaser.Scene {
         // Energy bar
         this.updateEnergyBar();
 
+        // Dash bar
+        this.updateDashBar(time);
+
         // Create food
-       this.createFood(time);
+        this.createFood(time);
 
         if (this.player) {
             this.createMoreSheep(time);
@@ -274,8 +310,8 @@ export class Testing extends Phaser.Scene {
         }
 
         if (this.waters) {
-            const maxSpeed = getScreenBasedSpeed(this, this.waterMaxSpeed);
-            const speed = maxSpeed * (Math.sin(time * 0.001));
+            const maxSpeed = getScreenBasedSpeed(this, 0.003);
+            const speed = maxSpeed * (Math.sin(time * 0.002));
             iterateGroupChildren<Tile>(this.waters, (water, index) => {
                 const mult = index % 2 === 0 ? -1 : 1;
                 water.tilePositionX += speed * mult;
@@ -285,6 +321,7 @@ export class Testing extends Phaser.Scene {
         // Update Hit/Miss counter
         this.hitMissText?.setText(`Hits: ${this.hitCount}, Misses: ${this.missCount}`);
 
+        // Create fish
         if (time - this.lastFishTime > 1000) {
             this.lastFishTime = time;
             const direction = Math.random() > 0.5 ? 'right' : 'left';
@@ -292,7 +329,7 @@ export class Testing extends Phaser.Scene {
             const fishX = direction === 'right'
                 ? Phaser.Math.Between(camBox.left, camBox.left + camBox.width * 0.25)
                 : Phaser.Math.Between(camBox.right - camBox.width * 0.25, camBox.right);
-            const fishY = getScreenBasedPixels(this, 0.45, 'height')
+            const fishY = getScreenBasedPixels(this, 0.54, 'height')
             this.fish.push(new Fish(this, fishX, fishY, {
                 upTime: 2,
                 downTime: 2,
