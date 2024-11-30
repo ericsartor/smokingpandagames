@@ -11,6 +11,7 @@ const OPEN_MOUTH_PANIC_SHEET = 'sprite-bat-open-mouth-panic-right';
 const CHEWING_PANIC_SHEET = 'sprite-bat-chewing-panic-right';
 const OPEN_MOUTH_SHEET = 'sprite-bat-open-mouth-right';
 const CHEWING_SHEET = 'sprite-bat-chewing-right';
+const TOOT_SHEET = 'sprite-bat-right-toot';
 registerLoadFunc((scene: Phaser.Scene) => {
     // Load spritesheet for idle
     scene.load.spritesheet(IDLE_SHEET, '/bat/bat_idle_sheet.png', {
@@ -47,6 +48,12 @@ registerLoadFunc((scene: Phaser.Scene) => {
         frameWidth: batFrameWidth,
         frameHeight: batFrameHeight,
     });
+    
+    // Load spritesheet for toot
+    scene.load.spritesheet(TOOT_SHEET, '/bat/toot_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
 });
 
 const ANIM_LENGTH = 4;
@@ -58,6 +65,7 @@ const CHEWING_PANIC_ANIM = 'anim-bat-chewing-panic-right';
 const PANICKED_ANIM = 'anim-bat-panicked-right';
 const OPEN_MOUTH_ANIM = 'anim-bat-open-mouth-right';
 const CHEWING_ANIM = 'anim-bat-chewing-right';
+const TOOT_ANIM = 'anim-bat-right-toot';
 registerCreateFunc((scene: Phaser.Scene) => {
     // Set up idle animation
     scene.anims.create({
@@ -124,6 +132,16 @@ registerCreateFunc((scene: Phaser.Scene) => {
             ...scene.anims.generateFrameNumbers(CHEWING_PANIC_SHEET, { start: 1, end: 1 }),
         ],
     });
+
+    // Set up toot animation
+    scene.anims.create({
+        key: TOOT_ANIM,
+        frameRate: PANICKED_FRAME_RATE,
+        repeat: 0,
+        frames: [
+            ...scene.anims.generateFrameNumbers(TOOT_SHEET, { start: 0, end: 2 }),
+        ],
+    });
 });
 
 type BatPlayerOptions = {
@@ -156,6 +174,8 @@ export class BatPlayer {
     energy: number;
     energyPerFood: number;
     energyLossPerSecond: number;
+    toot: Phaser.GameObjects.Sprite | null = null;
+    scale = 0.15;
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -165,13 +185,13 @@ export class BatPlayer {
         scene.events.on('update', this.update, this);
 
         // Create physics sprite
-        this.sprite = this.scene.physics.add.sprite(0, 0, 'sprite-bat-right', 0);
+        this.sprite = this.scene.physics.add.sprite(0, 0, IDLE_SHEET, 0);
         this.sprite.body.setAllowGravity(false);
         this.sprite.setBounce(1);
         this.sprite.body.setCircle(this.sprite.width * 0.25, this.sprite.width * 0.25, this.sprite.height * 0.06);
         this.sprite.x = x;
         this.sprite.y = y;
-        scaleBasedOnCamera(this.scene, this.sprite, 0.15);
+        scaleBasedOnCamera(this.scene, this.sprite, this.scale);
 
         // Store speed
         this.baseSpeed = options.baseSpeed;
@@ -211,9 +231,19 @@ export class BatPlayer {
             const boost = this.scene.input.keyboard.addKey('SPACE');
 
             // Handle boost
+            const boostJustDown = Phaser.Input.Keyboard.JustDown(boost);
             if (boost.isDown && time >= this.nextBoostAvailable) {
                 this.boostEnd = time + (this.boostDuration * 1000);
                 this.nextBoostAvailable = this.boostEnd + (this.boostFrequency * 1000);
+            } else if (boostJustDown && this.toot === null) {
+                // Handle toot
+                this.toot = this.scene.add.sprite(this.sprite.x, this.sprite.y, TOOT_SHEET);
+                scaleBasedOnCamera(this.scene, this.toot, this.scale);
+                this.toot.anims.play(TOOT_ANIM);
+                this.toot.on(`animationcomplete-${TOOT_ANIM}`, () => {
+                    this.toot?.destroy();
+                    this.toot = null;
+                });
             }
             const isBoosting = time < this.boostEnd;
 
@@ -282,6 +312,17 @@ export class BatPlayer {
                 this.sprite.setVelocityY(speed);
             } else {
                 this.sprite.setVelocityY(0);
+            }
+
+            // Handle toot positioning
+            if (this.toot) {
+                this.toot.x = this.sprite.x;
+                this.toot.y = this.sprite.y;
+                if (isMovingLeft) {
+                    this.toot.setFlipX(true);
+                } else if (isMovingRight) {
+                    this.toot.setFlipX(false);
+                }
             }
         }
     }
