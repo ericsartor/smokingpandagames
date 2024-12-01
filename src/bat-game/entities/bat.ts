@@ -309,7 +309,7 @@ export class BatPlayer {
 
             // Handle boost
             const boostJustDown = Phaser.Input.Keyboard.JustDown(boost);
-            if (boost.isDown && time >= this.nextBoostAvailable) {
+            if (boostJustDown && time >= this.nextBoostAvailable) {
                 this.boostEnd = time + (this.boostDuration * 1000);
                 this.nextBoostAvailable = this.boostEnd + (this.boostFrequency * 1000);
             } else if (boostJustDown && this.toot === null) {
