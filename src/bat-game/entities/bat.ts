@@ -6,11 +6,15 @@ const batFrameWidth = 808;
 const batFrameHeight = 522;
 
 const IDLE_SHEET = 'sprite-bat-right';
+const LOW_ENERGY_SHEET = 'sprite-bat-low-energy-right';
+const LOWEST_ENERGY_SHEET = 'sprite-bat-lowest-energy-right';
 const PANICKED_SHEET = 'sprite-bat-panicked-right';
+const OPEN_MOUTH_SHEET = 'sprite-bat-open-mouth-right';
 const OPEN_MOUTH_PANIC_SHEET = 'sprite-bat-open-mouth-panic-right';
 const CHEWING_PANIC_SHEET = 'sprite-bat-chewing-panic-right';
-const OPEN_MOUTH_SHEET = 'sprite-bat-open-mouth-right';
 const CHEWING_SHEET = 'sprite-bat-chewing-right';
+const CHEWING_LOW_ENERGY_SHEET = 'sprite-bat-chewing-low-energy-right';
+const CHEWING_LOWEST_ENERGY_SHEET = 'sprite-bat-chewing-lowest-energy-right';
 const TOOT_SHEET = 'sprite-bat-right-toot';
 registerLoadFunc((scene: Phaser.Scene) => {
     // Load spritesheet for idle
@@ -54,6 +58,30 @@ registerLoadFunc((scene: Phaser.Scene) => {
         frameWidth: batFrameWidth,
         frameHeight: batFrameHeight,
     });
+    
+    // Load spritesheet for low energy
+    scene.load.spritesheet(LOW_ENERGY_SHEET, '/bat/bat_low_energy_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for lowest energy
+    scene.load.spritesheet(LOWEST_ENERGY_SHEET, '/bat/bat_lowest_energy_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for low energy chewing
+    scene.load.spritesheet(CHEWING_LOW_ENERGY_SHEET, '/bat/bat_chewing_low_energy_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for lowest energy chewing
+    scene.load.spritesheet(CHEWING_LOWEST_ENERGY_SHEET, '/bat/bat_chewing_lowest_energy_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
 });
 
 const ANIM_LENGTH = 4;
@@ -66,6 +94,10 @@ const PANICKED_ANIM = 'anim-bat-panicked-right';
 const OPEN_MOUTH_ANIM = 'anim-bat-open-mouth-right';
 const CHEWING_ANIM = 'anim-bat-chewing-right';
 const TOOT_ANIM = 'anim-bat-right-toot';
+const CHEWING_LOW_ENERGY_ANIM = 'anim-bat-chewing-low-energy-right';
+const CHEWING_LOWEST_ENERGY_ANIM = 'anim-bat-chewing-lowest-energy-right';
+const LOW_ENERGY_ANIM = 'anim-bat-low-energy-right';
+const LOWEST_ENERGY_ANIM = 'anim-bat-lowest-energy-right';
 registerCreateFunc((scene: Phaser.Scene) => {
     // Set up idle animation
     scene.anims.create({
@@ -140,6 +172,50 @@ registerCreateFunc((scene: Phaser.Scene) => {
         repeat: 0,
         frames: [
             ...scene.anims.generateFrameNumbers(TOOT_SHEET, { start: 0, end: 2 }),
+        ],
+    });
+
+    // Set up low energy animation
+    scene.anims.create({
+        key: LOW_ENERGY_ANIM,
+        frameRate: IDLE_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(LOW_ENERGY_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(LOW_ENERGY_SHEET, { start: 1, end: 1 }),
+        ],
+    });
+
+    // Set up lowest energy animation
+    scene.anims.create({
+        key: LOWEST_ENERGY_ANIM,
+        frameRate: IDLE_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(LOWEST_ENERGY_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(LOWEST_ENERGY_SHEET, { start: 1, end: 1 }),
+        ],
+    });
+
+    // Set up chewing low energy animation
+    scene.anims.create({
+        key: CHEWING_LOW_ENERGY_ANIM,
+        frameRate: IDLE_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(CHEWING_LOW_ENERGY_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(CHEWING_LOW_ENERGY_SHEET, { start: 1, end: 1 }),
+        ],
+    });
+
+    // Set up chewing lowest energy animation
+    scene.anims.create({
+        key: CHEWING_LOWEST_ENERGY_ANIM,
+        frameRate: IDLE_FRAME_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(CHEWING_LOWEST_ENERGY_SHEET, { start: 0, end: 2 }),
+            ...scene.anims.generateFrameNumbers(CHEWING_LOWEST_ENERGY_SHEET, { start: 1, end: 1 }),
         ],
     });
 });
@@ -281,7 +357,13 @@ export class BatPlayer {
                     return PANICKED_ANIM
                 }
                 if (nearFood) return OPEN_MOUTH_ANIM;
-                if (this.chewing) return CHEWING_ANIM;
+                if (this.chewing) {
+                    if (this.energy < this.maxEnergy / 4) return CHEWING_LOWEST_ENERGY_ANIM;
+                    if (this.energy < this.maxEnergy / 2) return CHEWING_LOW_ENERGY_ANIM;
+                    return CHEWING_ANIM;
+                }
+                if (this.energy < this.maxEnergy / 4) return LOWEST_ENERGY_ANIM;
+                if (this.energy < this.maxEnergy / 2) return LOW_ENERGY_ANIM;
                 return IDLE_ANIM;
             })();
             const currentAnimFrame = this.sprite.anims.currentFrame !== null ? (this.sprite.anims.currentFrame.index % ANIM_LENGTH) : null;

@@ -102,8 +102,8 @@ export class Testing extends Phaser.Scene {
             food: this.food,
             foodGroup,
             energyPerFood: 50,
-            maxEnergy: 500,
-            energyLossPerSecond: 10,
+            maxEnergy: 1000,
+            energyLossPerSecond: 50,
         });
 
         // Set up camera
