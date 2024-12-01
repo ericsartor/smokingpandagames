@@ -101,7 +101,7 @@ export class Testing extends Phaser.Scene {
             boostFrequency: 3,
             food: this.food,
             foodGroup,
-            energyPerFood: 50,
+            energyPerFood: 150,
             maxEnergy: 1000,
             energyLossPerSecond: 50,
         });

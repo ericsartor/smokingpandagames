@@ -252,6 +252,7 @@ export class BatPlayer {
     energyLossPerSecond: number;
     toot: Phaser.GameObjects.Sprite | null = null;
     scale = 0.15;
+    createdTime: number = 0
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -395,6 +396,17 @@ export class BatPlayer {
             } else {
                 this.sprite.setVelocityY(0);
             }
+
+            // Handle idle sway movement
+            if (this.createdTime === 0) {
+                this.createdTime = time;
+            }
+            const timeElapsed = time - this.createdTime;
+            const swaySpeed = getScreenBasedSpeed(this.scene, 0.0002);
+            const speedXSine = swaySpeed * (Math.sin(timeElapsed * 0.005));
+            const speedYSine = swaySpeed * (Math.sin(timeElapsed * 0.01));
+            this.sprite.x += speedXSine;
+            this.sprite.y += speedYSine;
 
             // Handle toot positioning
             if (this.toot) {
