@@ -222,9 +222,9 @@ registerCreateFunc((scene: Phaser.Scene) => {
 
 type BatPlayerOptions = {
     baseSpeed: number;
-    boostSpeed: number;
-    boostDuration: number; // seconds
-    boostFrequency: number; // seconds
+    dashSpeed: number;
+    dashDuration: number; // seconds
+    dashFrequency: number; // seconds
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
     energyPerFood: number;
@@ -236,11 +236,11 @@ export class BatPlayer {
     scene: Phaser.Scene;
     sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     baseSpeed: number;
-    boostSpeed: number;
-    boostDuration: number;
-    boostFrequency: number;
-    boostEnd = 0;
-    nextBoostAvailable = 0;
+    dashSpeed: number;
+    dashDuration: number;
+    dashFrequency: number;
+    dashEnd = 0;
+    nextDashAvailable = 0;
     food: ExtendedSprite[];
     foodGroup: Phaser.GameObjects.Group;
     chewing = false;
@@ -272,9 +272,9 @@ export class BatPlayer {
 
         // Store speed
         this.baseSpeed = options.baseSpeed;
-        this.boostSpeed = options.boostSpeed;
-        this.boostDuration = options.boostDuration;
-        this.boostFrequency = options.boostFrequency;
+        this.dashSpeed = options.dashSpeed;
+        this.dashDuration = options.dashDuration;
+        this.dashFrequency = options.dashFrequency;
 
         // Handle food
         this.energyLossPerSecond = options.energyLossPerSecond;
@@ -305,14 +305,14 @@ export class BatPlayer {
         if (this.scene.input.keyboard) {
             // Define inputs
             const controls = this.scene.input.keyboard.createCursorKeys();
-            const boost = this.scene.input.keyboard.addKey('SPACE');
+            const dash = this.scene.input.keyboard.addKey('SPACE');
 
-            // Handle boost
-            const boostJustDown = Phaser.Input.Keyboard.JustDown(boost);
-            if (boostJustDown && time >= this.nextBoostAvailable) {
-                this.boostEnd = time + (this.boostDuration * 1000);
-                this.nextBoostAvailable = this.boostEnd + (this.boostFrequency * 1000);
-            } else if (boostJustDown && this.toot === null) {
+            // Handle dash
+            const dashJustDown = Phaser.Input.Keyboard.JustDown(dash);
+            if (dashJustDown && time >= this.nextDashAvailable) {
+                this.dashEnd = time + (this.dashDuration * 1000);
+                this.nextDashAvailable = this.dashEnd + (this.dashFrequency * 1000);
+            } else if (dashJustDown && this.toot === null) {
                 // Handle toot
                 this.toot = this.scene.add.sprite(this.sprite.x, this.sprite.y, TOOT_SHEET);
                 scaleBasedOnCamera(this.scene, this.toot, this.scale);
@@ -322,7 +322,7 @@ export class BatPlayer {
                     this.toot = null;
                 });
             }
-            const isBoosting = time < this.boostEnd;
+            const isDashing = time < this.dashEnd;
 
             // Check movement
             const isMovingLeft = controls.left.isDown && !controls.right.isDown;
@@ -331,7 +331,7 @@ export class BatPlayer {
             const isMovingDown = !controls.up.isDown && controls.down.isDown;
 
             // Handle energy
-            this.energy = Math.max(0, this.energy - (this.energyLossPerSecond * deltaSeconds * (isBoosting ? 2 : 1)));
+            this.energy = Math.max(0, this.energy - (this.energyLossPerSecond * deltaSeconds * (isDashing ? 2 : 1)));
 
             // Check food proximity
             const openMouthDistance = getScreenBasedPixels(this.scene, 0.1, 'width');
@@ -352,7 +352,7 @@ export class BatPlayer {
 
             // Handle animation
             const anim = (() => {
-                if (isBoosting) {
+                if (isDashing) {
                     if (nearFood) return OPEN_MOUTH_PANIC_ANIM;
                     if (this.chewing) return CHEWING_PANIC_ANIM;
                     return PANICKED_ANIM
@@ -375,7 +375,7 @@ export class BatPlayer {
             }, true);
             
             // Choose speed
-            const speed = getScreenBasedSpeed(this.scene, isBoosting ? this.boostSpeed : this.baseSpeed);
+            const speed = getScreenBasedSpeed(this.scene, isDashing ? this.dashSpeed : this.baseSpeed);
             
             // Horizontal movement
             if (isMovingLeft) {

@@ -96,9 +96,9 @@ export class Testing extends Phaser.Scene {
         // Create bat player
         this.player = new BatPlayer(this, 0, 0, {
             baseSpeed: 0.3,
-            boostSpeed: 0.6,
-            boostDuration: 0.5,
-            boostFrequency: 3,
+            dashSpeed: 0.6,
+            dashDuration: 0.5,
+            dashFrequency: 3,
             food: this.food,
             foodGroup,
             energyPerFood: 150,
@@ -180,7 +180,7 @@ export class Testing extends Phaser.Scene {
         );
         this.energyBar.setOrigin(1, 0);
 
-        // Set up boost bar
+        // Set up dash bar
         this.maxDashBarWidth = getScreenBasedPixels(this, 0.1, 'width');
         const dashBarHeight = getScreenBasedPixels(this, 0.025, 'height');
         const dashBarX = camBox.right - padding;
@@ -276,8 +276,8 @@ export class Testing extends Phaser.Scene {
     updateDashBar(time: number) {
         if (this.player === null) return;
         if (this.dashBar === null) return;
-        const total = this.player.nextBoostAvailable - this.player.boostEnd;
-        const remaining = this.player.nextBoostAvailable - time;
+        const total = this.player.nextDashAvailable - this.player.dashEnd;
+        const remaining = this.player.nextDashAvailable - time;
         const percent = Math.max(0, Math.min(1, remaining / total));
         this.dashBar.width = percent * this.maxDashBarWidth;
     }
