@@ -16,6 +16,8 @@ const CHEWING_SHEET = 'sprite-bat-chewing-right';
 const CHEWING_LOW_ENERGY_SHEET = 'sprite-bat-chewing-low-energy-right';
 const CHEWING_LOWEST_ENERGY_SHEET = 'sprite-bat-chewing-lowest-energy-right';
 const TOOT_SHEET = 'sprite-bat-right-toot';
+const PASS_OUT_SHEET = 'sprite-bat-pass-out-right';
+const FALLING_SHEET = 'sprite-bat-falling-right';
 registerLoadFunc((scene: Phaser.Scene) => {
     // Load spritesheet for idle
     scene.load.spritesheet(IDLE_SHEET, '/bat/bat_idle_sheet.png', {
@@ -82,11 +84,24 @@ registerLoadFunc((scene: Phaser.Scene) => {
         frameWidth: batFrameWidth,
         frameHeight: batFrameHeight,
     });
+    
+    // Load spritesheet for passing out
+    scene.load.spritesheet(PASS_OUT_SHEET, '/bat/bat_pass_out_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
+    
+    // Load spritesheet for falling
+    scene.load.spritesheet(FALLING_SHEET, '/bat/bat_falling_sheet.png', {
+        frameWidth: batFrameWidth,
+        frameHeight: batFrameHeight,
+    });
 });
 
 const ANIM_LENGTH = 4;
 const IDLE_FRAME_RATE = 9;
 const PANICKED_FRAME_RATE = 11;
+const PASS_FALL_RATE = 10;
 const IDLE_ANIM = 'anim-bat-right';
 const OPEN_MOUTH_PANIC_ANIM = 'anim-bat-open-mouth-panic-right';
 const CHEWING_PANIC_ANIM = 'anim-bat-chewing-panic-right';
@@ -98,6 +113,8 @@ const CHEWING_LOW_ENERGY_ANIM = 'anim-bat-chewing-low-energy-right';
 const CHEWING_LOWEST_ENERGY_ANIM = 'anim-bat-chewing-lowest-energy-right';
 const LOW_ENERGY_ANIM = 'anim-bat-low-energy-right';
 const LOWEST_ENERGY_ANIM = 'anim-bat-lowest-energy-right';
+const PASS_OUT_ANIM = 'anim-bat-pass-out-right';
+const FALLING_ANIM = 'anim-bat-falling-right';
 registerCreateFunc((scene: Phaser.Scene) => {
     // Set up idle animation
     scene.anims.create({
@@ -218,6 +235,27 @@ registerCreateFunc((scene: Phaser.Scene) => {
             ...scene.anims.generateFrameNumbers(CHEWING_LOWEST_ENERGY_SHEET, { start: 1, end: 1 }),
         ],
     });
+
+    // Set up pass out animation
+    scene.anims.create({
+        key: PASS_OUT_ANIM,
+        frameRate: PASS_FALL_RATE,
+        repeat: 0,
+        frames: [
+            ...scene.anims.generateFrameNumbers(PASS_OUT_SHEET, { start: 0, end: 7 }),
+        ],
+    });
+
+    // Set up falling animation
+    scene.anims.create({
+        key: FALLING_ANIM,
+        frameRate: PASS_FALL_RATE,
+        repeat: -1,
+        frames: [
+            ...scene.anims.generateFrameNumbers(FALLING_SHEET, { start: 0, end: 3 }),
+            // ...scene.anims.generateFrameNumbers(CHEWING_LOWEST_ENERGY_SHEET, { start: 2, end: 1 }),
+        ],
+    });
 });
 
 type BatPlayerOptions = {
@@ -252,7 +290,9 @@ export class BatPlayer {
     energyLossPerSecond: number;
     toot: Phaser.GameObjects.Sprite | null = null;
     scale = 0.15;
-    createdTime: number = 0
+    createdTime: number = 0;
+    startedDeathSequence = false;
+    colliders: Phaser.Physics.Arcade.Collider[] = [];
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -283,23 +323,44 @@ export class BatPlayer {
         this.energyPerFood = options.energyPerFood;
         this.food = options.food;
         this.foodGroup = options.foodGroup;
-        this.scene.physics.add.collider(this.sprite, this.foodGroup, (_, food) => {
-            this.energy = Math.min(this.maxEnergy, this.energy + this.energyPerFood);
-            food.destroy();
-            const foodIndex = this.food.findIndex((f) => f.sprite === food);
-            if (foodIndex !== -1) {
-                this.food.splice(foodIndex, 1);
-            }
-            this.chewing = true;
-            this.endChewing = this.currentTime + 1000;
-        });
+        this.colliders.push(
+            this.scene.physics.add.collider(this.sprite, this.foodGroup, (_, food) => {
+                this.energy = Math.min(this.maxEnergy, this.energy + this.energyPerFood);
+                food.destroy();
+                const foodIndex = this.food.findIndex((f) => f.sprite === food);
+                if (foodIndex !== -1) {
+                    this.food.splice(foodIndex, 1);
+                }
+                this.chewing = true;
+                this.endChewing = this.currentTime + 1000;
+            })
+        );
     }
 
     update(time: number, deltaMs: number) {
         // Update time
         this.currentTime = time;
-
         const deltaSeconds = deltaMs / 1000;
+
+        // Handle death
+        const dead = this.energy === 0 || this.startedDeathSequence;
+        if (dead) {
+            if (!this.startedDeathSequence) {
+                this.startedDeathSequence = true;
+                this.colliders.forEach((collider) => {
+                    this.scene.physics.world.removeCollider(collider);
+                });
+                this.sprite.anims.play(PASS_OUT_ANIM);
+                this.sprite.body.setVelocity(0);
+                this.sprite.body.setGravityY(-getScreenBasedPixels(this.scene, 1.25, 'height'));
+                this.sprite.body.setAllowGravity(true);
+                this.sprite.setBounce(0);
+                this.sprite.on('animationcomplete-' + PASS_OUT_ANIM, () => {
+                    this.sprite.anims.play(FALLING_ANIM);
+                });
+            }
+            return;
+        }
 
         // Handle input
         if (this.scene.input.keyboard) {
@@ -344,7 +405,7 @@ export class BatPlayer {
             
             // Handle chewing
             if (this.chewing && this.endChewing !== null) {
-                if (this.endChewing <= time) {
+                if (this.endChewing <= time || dead) {
                     this.chewing = false;
                     this.endChewing = null;
                 }

@@ -21,6 +21,7 @@ export class Testing extends Phaser.Scene {
     maxEnergyBarWidth: number = 0;
     dashBar: Phaser.GameObjects.Rectangle | null = null;
     maxDashBarWidth: number = 0;
+    playerColliders: Phaser.Physics.Arcade.Collider[] = [];
 
     sheeps: Phaser.GameObjects.Group | null = null;
     sheepCount: Phaser.GameObjects.Text | null = null;
@@ -103,7 +104,7 @@ export class Testing extends Phaser.Scene {
             foodGroup,
             energyPerFood: 150,
             maxEnergy: 1000,
-            energyLossPerSecond: 50,
+            energyLossPerSecond: 1000,
         });
 
         // Set up camera
@@ -150,12 +151,14 @@ export class Testing extends Phaser.Scene {
 
         // Set up collision for sheep and platforms, also sheep and player
         this.physics.add.collider(this.sheeps, this.platforms);
-        this.physics.add.collider(this.sheeps, this.player.sprite, (sheep) => {
-            const sprite = sheep as Sprite;
-            if (this.hitSheepBuffer.has(sprite)) return;
-            this.hitCount++;
-            this.hitSheepBuffer.add(sprite);
-        });
+        this.player.colliders.push(
+            this.physics.add.collider(this.sheeps, this.player.sprite, (sheep) => {
+                const sprite = sheep as Sprite;
+                if (this.hitSheepBuffer.has(sprite)) return;
+                this.hitCount++;
+                this.hitSheepBuffer.add(sprite);
+            })
+        );
 
         // Set up energy bar
         const padding = 10;

@@ -1,0 +1,72 @@
+{
+  "sprites": [
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-1.png",
+      "width": 808,
+      "height": 522,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-2.png",
+      "width": 808,
+      "height": 522,
+      "x": 808,
+      "y": 0
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-3.png",
+      "width": 808,
+      "height": 522,
+      "x": 1616,
+      "y": 0
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-4.png",
+      "width": 808,
+      "height": 522,
+      "x": 0,
+      "y": 522
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-5.png",
+      "width": 808,
+      "height": 522,
+      "x": 808,
+      "y": 522
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-6.png",
+      "width": 808,
+      "height": 522,
+      "x": 1616,
+      "y": 522
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-7.png",
+      "width": 808,
+      "height": 522,
+      "x": 0,
+      "y": 1044
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-8.png",
+      "width": 808,
+      "height": 522,
+      "x": 808,
+      "y": 1044
+    },
+    {
+      "fileName": "bat_closing_eyes_-_color_merged-9.png",
+      "width": 808,
+      "height": 522,
+      "x": 1616,
+      "y": 1044
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 2424,
+  "spriteSheetHeight": 1566
+}
