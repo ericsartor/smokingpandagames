@@ -1,5 +1,4 @@
 import { registerCreateFunc, registerLoadFunc } from "../loading";
-import { ExtendedSprite } from "../types/util";
 import { getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera } from "../utils";
 
 const splashWidth = 1802;
@@ -39,9 +38,6 @@ registerCreateFunc((scene: Phaser.Scene) => {
     });
 });
 
-type WaterOptions = {
-    
-};
 export class Water {
 
     scene: Phaser.Scene;
@@ -50,7 +46,7 @@ export class Water {
     x: number;
     y: number;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, options: WaterOptions) {
+    constructor(scene: Phaser.Scene, x: number, y: number) {
         // Store scene
         this.scene = scene;
         this.x = x;

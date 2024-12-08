@@ -5,7 +5,7 @@ import { Fly } from './entities/fly';
 import { Sheep } from './entities/sheep';
 import { Water } from './entities/water';
 import { ExtendedSprite } from './types/util';
-import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera, setScreenBasedGravity } from './utils';
+import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, setScreenBasedGravity } from './utils';
 
 const SHEEP_SCALE = 0.1;
 const SHEEP_SPEED_RANGE_MIN = 0.2;
@@ -13,7 +13,6 @@ const SHEEP_SPEED_RANGE_MAX = 0.7;
 const SHEEP_SPAWN_RATE = 700;
 
 type Sprite = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-type Tile = Phaser.GameObjects.TileSprite;
 
 export class Testing extends Phaser.Scene {
 
@@ -70,20 +69,20 @@ export class Testing extends Phaser.Scene {
         leftPlatform.setFlipX(true);
         const rightPlatform = this.physics.add.image(0, 0, 'cliff_right');
         const camBox = getCameraBox(this);
-        [leftPlatform, rightPlatform].forEach((platform, index) => {
+        [leftPlatform, rightPlatform].forEach((platform) => {
             platform.body.setAllowGravity(false);
             platform.setPushable(false);
             platformGroup.add(platform);
             platform.y = camBox.top + jutOut;
+            scaleBasedOnCamera(this, platform, 0.25);
             platform.setSize(
-                getScreenBasedPixels(this, 2, 'width'),
+                platform.width,
                 getScreenBasedPixels(this, 0.05, 'height'),
             );
             platform.setOffset(
-                getScreenBasedPixels(this, index === 0 ? -0.9 : 0, 'width'),
+                0,
                 getScreenBasedPixels(this, 0.01, 'height'),
             );
-            scaleBasedOnCamera(this, platform, 0.25);
         });
         leftPlatform.setOrigin(0, 0);
         leftPlatform.x = camBox.left;
@@ -114,7 +113,7 @@ export class Testing extends Phaser.Scene {
         this.sheeps = this.add.group();
 
         // Create water
-        this.water = new Water(this, 0, 0, {});
+        this.water = new Water(this, 0, 0);
         this.water.registerSplashCollision(this.player.sprite);
 
         // Set up collision for sheep and platforms, also sheep and player
