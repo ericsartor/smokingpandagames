@@ -252,8 +252,7 @@ registerCreateFunc((scene: Phaser.Scene) => {
         frameRate: PASS_FALL_RATE,
         repeat: -1,
         frames: [
-            ...scene.anims.generateFrameNumbers(FALLING_SHEET, { start: 0, end: 3 }),
-            // ...scene.anims.generateFrameNumbers(CHEWING_LOWEST_ENERGY_SHEET, { start: 2, end: 1 }),
+            ...scene.anims.generateFrameNumbers(FALLING_SHEET, { frames: [0, 1, 2, 3, 2, 2, 1] }),
         ],
     });
 });
