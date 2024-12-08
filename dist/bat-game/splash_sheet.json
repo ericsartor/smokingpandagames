@@ -1,0 +1,254 @@
+{
+  "sprites": [
+    {
+      "fileName": "bat_splash_-_color_merged-1.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-10.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-11.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-12.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-13.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-14.png",
+      "width": 1802,
+      "height": 855,
+      "x": 9010,
+      "y": 0
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-15.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-16.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-17.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-18.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-19.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-2.png",
+      "width": 1802,
+      "height": 855,
+      "x": 9010,
+      "y": 855
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-20.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-21.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-22.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-23.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-24.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-25.png",
+      "width": 1802,
+      "height": 855,
+      "x": 9010,
+      "y": 1710
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-26.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-27.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-28.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-29.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-3.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-30.png",
+      "width": 1802,
+      "height": 855,
+      "x": 9010,
+      "y": 2565
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-31.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-32.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-33.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-34.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-35.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-4.png",
+      "width": 1802,
+      "height": 855,
+      "x": 9010,
+      "y": 3420
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-5.png",
+      "width": 1802,
+      "height": 855,
+      "x": 0,
+      "y": 4275
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-6.png",
+      "width": 1802,
+      "height": 855,
+      "x": 1802,
+      "y": 4275
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-7.png",
+      "width": 1802,
+      "height": 855,
+      "x": 3604,
+      "y": 4275
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-8.png",
+      "width": 1802,
+      "height": 855,
+      "x": 5406,
+      "y": 4275
+    },
+    {
+      "fileName": "bat_splash_-_color_merged-9.png",
+      "width": 1802,
+      "height": 855,
+      "x": 7208,
+      "y": 4275
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 10812,
+  "spriteSheetHeight": 5130
+}
