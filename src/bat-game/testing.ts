@@ -3,6 +3,7 @@ import { BatPlayer } from './entities/bat';
 import { Fish } from './entities/fish';
 import { Fly } from './entities/fly';
 import { Sheep } from './entities/sheep';
+import { Water } from './entities/water';
 import { ExtendedSprite } from './types/util';
 import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera, setScreenBasedGravity } from './utils';
 
@@ -32,7 +33,7 @@ export class Testing extends Phaser.Scene {
     hitMissText: Phaser.GameObjects.Text | null = null;
     hitSheepBuffer = new Set<Sprite>();
     
-    waters: Phaser.GameObjects.Group | null = null;
+    water: Water | null = null;;
 
     lastFishTime = 0;
     fish: Fish[] = []
@@ -46,7 +47,6 @@ export class Testing extends Phaser.Scene {
 
     preload() {
         this.load.baseURL = '/bat-game';
-        this.load.image('water', '/water.png');
         this.load.image('sky', '/backgrounds/sky.png');
         this.load.image('cliff_right', '/backgrounds/cliff_right.png');
     }
@@ -104,7 +104,7 @@ export class Testing extends Phaser.Scene {
             foodGroup,
             energyPerFood: 150,
             maxEnergy: 1000,
-            energyLossPerSecond: 1000,
+            energyLossPerSecond: 250,
         });
 
         // Set up camera
@@ -114,40 +114,8 @@ export class Testing extends Phaser.Scene {
         this.sheeps = this.add.group();
 
         // Create water
-        const waterStartY = getScreenBasedPixels(this, 0.42, 'height');
-        const waterWidth = getScreenBasedPixels(this, 1, 'width');
-        this.waters = this.add.group([
-            this.add.tileSprite(
-                0,
-                waterStartY,
-                waterWidth,
-                0,
-                'water',
-            ),
-            this.add.tileSprite(
-                0,
-                waterStartY + (getScreenBasedPixels(this, 0.02, 'height')),
-                waterWidth,
-                0,
-                'water',
-            ),
-            this.add.tileSprite(
-                0,
-                waterStartY + (getScreenBasedPixels(this, 0.04, 'height')),
-                waterWidth,
-                0,
-                'water',
-            ),
-        ]);
-        iterateGroupChildren<Tile>(this.waters, (water, index, arr) => {
-            scaleTileBasedOnCamera(this, water, 0.25);
-            water.setOrigin(0.5, 0);
-            if (index === arr.length - 1) {
-                water.setDepth(1);
-            } else {
-                water.setDepth(-1);
-            }
-        });
+        this.water = new Water(this, 0, 0, {});
+        this.water.registerSplashCollision(this.player.sprite);
 
         // Set up collision for sheep and platforms, also sheep and player
         this.physics.add.collider(this.sheeps, this.platforms);
@@ -235,6 +203,11 @@ export class Testing extends Phaser.Scene {
                 speed,
             });
 
+            // Set up splash
+            if (this.water) {
+                this.water.registerSplashCollision(sheep.sprite);
+            }
+
             // Track sheep
             this.sheeps.add(sheep.sprite);
             this.lastSheepTime = time;
@@ -310,15 +283,6 @@ export class Testing extends Phaser.Scene {
             if (this.sheepCount) {
                 this.sheepCount.setText(`Sheeps: ${this.sheeps.getLength()}`);
             }
-        }
-
-        if (this.waters) {
-            const maxSpeed = getScreenBasedSpeed(this, 0.003);
-            const speed = maxSpeed * (Math.sin(time * 0.002));
-            iterateGroupChildren<Tile>(this.waters, (water, index) => {
-                const mult = index % 2 === 0 ? -1 : 1;
-                water.tilePositionX += speed * mult;
-            });
         }
 
         // Update Hit/Miss counter
