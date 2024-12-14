@@ -1,0 +1,30 @@
+{
+  "sprites": [
+    {
+      "fileName": "1.png",
+      "width": 708,
+      "height": 192,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "2.png",
+      "width": 708,
+      "height": 192,
+      "x": 708,
+      "y": 0
+    },
+    {
+      "fileName": "3.png",
+      "width": 708,
+      "height": 192,
+      "x": 0,
+      "y": 192
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 1416,
+  "spriteSheetHeight": 384
+}

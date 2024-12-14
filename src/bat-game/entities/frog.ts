@@ -151,7 +151,7 @@ export class Frog {
         this.lilyPad.x = this.sprite.x + this.lilyPadOffset;
     }
 
-    update(time: number, deltaMs: number) {
+    update(time: number) {
         const speed = getScreenBasedSpeed(this.scene, 0.0001);
         // const speedXSine = speed * (Math.sin(timeElapsed * 0.005));
         const speedYSine = speed * (Math.sin(time * 0.005));
