@@ -80,11 +80,13 @@ type FishOptions = {
     upTime: number;
     stayTime: number;
     downTime: number;
+    spitHandler: (spit: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => void;
+    depth: number;
 };
 export class Fish {
 
     scene: Phaser.Scene;
-    fish: Phaser.GameObjects.Sprite;
+    sprite: Phaser.GameObjects.Sprite;
     spit: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     upPixels: number;
     upTime: number;
@@ -96,7 +98,9 @@ export class Fish {
     done =  false;
     initialY: number;
     direction: 'left' | 'right';
+    depth: number;
     spitCreated = false;
+    spitHandler: (spit: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => void;
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: FishOptions) {
         if (!fishColorConfigs[options.color]) throw Error('invalid fish color: ' + options.color);
@@ -104,6 +108,9 @@ export class Fish {
 
         // Store scene
         this.scene = scene;
+
+        // Store spit handler
+        this.spitHandler = options.spitHandler;
 
         // Set timing/position data
         this.upPixels = getScreenBasedPixels(scene, 0.1, 'height');
@@ -118,27 +125,29 @@ export class Fish {
         scene.events.on('update', this.update, this);
 
         // Create fish sprite
-        this.fish = scene.add.sprite(x, y, fishConfig.spritesheetKey);
+        this.sprite = scene.add.sprite(x, y, fishConfig.spritesheetKey);
+        this.sprite.setDepth(options.depth);
+        this.depth = options.depth;
 
         // Set origin based on direction
-        this.fish.setOrigin(
+        this.sprite.setOrigin(
             options.direction === 'right' ? 0 : 1,
             0,
         );
 
         // Flip sprite based on direction
         if (options.direction === 'left') {
-            this.fish.setFlipX(true);
+            this.sprite.setFlipX(true);
         }
 
         // Angle fish up based on direction
-        this.fish.setRotation(options.direction === 'right' ? -0.453786 : 0.453786);
+        this.sprite.setRotation(options.direction === 'right' ? -0.453786 : 0.453786);
 
         // Set scale on fish
-        scaleBasedOnCamera(scene, this.fish, 0.08);
+        scaleBasedOnCamera(scene, this.sprite, 0.08);
 
         // Start animation
-        this.fish.anims.play(fishConfig.animName);
+        this.sprite.anims.play(fishConfig.animName);
 
         // Create spit
         this.spit = scene.physics.add.sprite(
@@ -153,6 +162,7 @@ export class Fish {
         this.spit.setVisible(false);
         this.spit.body.setAllowGravity(false);
         scaleBasedOnCamera(scene, this.spit, 0.04);
+        this.spitHandler(this.spit);
     }
 
     update(time: number) {
@@ -164,25 +174,16 @@ export class Fish {
 
         // Check if we need to destroy the fish
         if (timeSinceStart > totalTime) {
-            this.fish.destroy();
+            this.sprite.destroy();
             this.fishDestroyed = true;
             if (this.spitDestroyed) {
                 this.done = true;
             }
         }
 
-        // Check if we need to destroy the spit
-        if (this.spit.y > getScreenBasedPixels(this.scene, 1, 'height')) {
-            this.spitDestroyed = true;
-            this.spit.destroy();
-            if (this.fishDestroyed) {
-                this.done = true;
-            }
-        }
-
         // Handle moving the spit and spawning the spit
         if (timeSinceStart <= this.upTime) {
-            this.fish.y = this.initialY - (timeSinceStart / this.upTime * this.upPixels);
+            this.sprite.y = this.initialY - (timeSinceStart / this.upTime * this.upPixels);
         } else if (timeSinceStart >= this.upTime && !this.spitCreated) {
             this.spitCreated = true;
             this.spit.setVisible(true);
@@ -195,7 +196,16 @@ export class Fish {
             this.spit.body.setAllowGravity(true);
         } else if (timeSinceStart >= this.upTime + this.stayTime) {
             const timeLeft = this.upTime + this.stayTime + this.downTime - timeSinceStart;
-            this.fish.y = this.initialY - (timeLeft / this.downTime * this.upPixels);
+            this.sprite.y = this.initialY - (timeLeft / this.downTime * this.upPixels);
+        }
+
+        // Check if we need to destroy the spit
+        if (this.spit.y > getScreenBasedPixels(this.scene, 1, 'height')) {
+            this.spitDestroyed = true;
+            this.spit.destroy();
+            if (this.fishDestroyed) {
+                this.done = true;
+            }
         }
 
     }

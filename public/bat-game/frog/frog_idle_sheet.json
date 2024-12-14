@@ -1,0 +1,30 @@
+{
+  "sprites": [
+    {
+      "fileName": "still_frog_-_color_merged-1.png",
+      "width": 759,
+      "height": 719,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "still_frog_-_color_merged-2.png",
+      "width": 759,
+      "height": 719,
+      "x": 759,
+      "y": 0
+    },
+    {
+      "fileName": "still_frog_-_color_merged-3.png",
+      "width": 759,
+      "height": 719,
+      "x": 0,
+      "y": 719
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 1518,
+  "spriteSheetHeight": 1438
+}

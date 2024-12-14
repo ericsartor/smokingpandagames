@@ -37,11 +37,18 @@ export class LoadingScene extends Phaser.Scene {
     }
 
     preload() {
+        // Create loading text
+        const text = this.add.text(0, 0, 'Loading 0%', { color: '#000000' });
+        this.loadingText = text;
+        this.cameras.main.centerOn(0, 0);
+        console.log('created loading text');
+
         // Set up loading progress logic
         this.load.on('progress', (percent: number) => {
             this.loadingPercent = Math.round(percent * 100);
         });
         this.load.on('complete', () => {
+            console.log('loading complete');
             this.scene.start('Testing');
         });
 
@@ -54,11 +61,6 @@ export class LoadingScene extends Phaser.Scene {
 
     create() {
         if (startingScene === null) throw Error('starting scene was not set');
-
-        // Create loading text
-        const text = this.add.text(0, 0, 'Loading 0%', { color: '#000000' });
-        this.loadingText = text;
-        this.cameras.main.centerOn(0, 0);
 
         // Run creation functions
         createFuncs.forEach((func) => {

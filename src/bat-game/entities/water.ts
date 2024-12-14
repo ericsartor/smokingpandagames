@@ -88,7 +88,9 @@ export class Water {
             water.setOrigin(0.5, 0);
             if (index === arr.length - 1) {
                 water.setDepth(1);
-            } else {
+            } else if (index === 0) {
+                water.setDepth(-2);
+            } else if (index === 0) {
                 water.setDepth(-1);
             }
         });

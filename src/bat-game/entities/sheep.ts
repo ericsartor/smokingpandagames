@@ -53,6 +53,7 @@ export class Sheep {
     
         // Set bounce
         this.sprite.setBounce(0.8);
+        this.sprite.setFriction(0);
 
         // Start animation
         this.sprite.anims.play('anim-sheep-left');

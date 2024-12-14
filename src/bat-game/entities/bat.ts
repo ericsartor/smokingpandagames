@@ -292,6 +292,9 @@ export class BatPlayer {
     createdTime: number = 0;
     startedDeathSequence = false;
     colliders: Phaser.Physics.Arcade.Collider[] = [];
+    invincible = false;
+    cueDamageTaken = false;
+    damageTakenTime = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number, options: BatPlayerOptions) {
         // Store scene
@@ -304,6 +307,7 @@ export class BatPlayer {
         this.sprite = this.scene.physics.add.sprite(0, 0, IDLE_SHEET, 0);
         this.sprite.body.setAllowGravity(false);
         this.sprite.setBounce(1);
+        this.sprite.setFriction(0);
         this.sprite.body.setCircle(this.sprite.width * 0.25, this.sprite.width * 0.25, this.sprite.height * 0.06);
         this.sprite.x = x;
         this.sprite.y = y;
@@ -334,6 +338,29 @@ export class BatPlayer {
                 this.endChewing = this.currentTime + 1000;
             })
         );
+
+    }
+
+    registerDamageSprite(damageSprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, damage: number, shouldDestroy: boolean) {
+        this.colliders.push(
+            this.scene.physics.add.overlap(this.sprite, damageSprite, (_, otherSprite) => {
+                if (shouldDestroy) otherSprite.destroy();
+                if (this.invincible) return;
+                this.takeDamage(damage);
+            })
+        );
+    }
+
+    takeDamage(damage: number) {
+        this.energy = Math.max(0, this.energy - damage);
+        this.invincible = true;
+        this.cueDamageTaken = true;
+    }
+
+    endIFrames() {
+        this.sprite.alpha = 1;
+        this.damageTakenTime = 0;
+        this.invincible = false;
     }
 
     update(time: number, deltaMs: number) {
@@ -345,6 +372,7 @@ export class BatPlayer {
         const dead = this.energy === 0 || this.startedDeathSequence;
         if (dead) {
             if (!this.startedDeathSequence) {
+                this.endIFrames();
                 this.startedDeathSequence = true;
                 this.colliders.forEach((collider) => {
                     this.scene.physics.world.removeCollider(collider);
@@ -359,6 +387,30 @@ export class BatPlayer {
                 });
             }
             return;
+        }
+
+        // Handle damage iframes
+        if (this.cueDamageTaken) {
+            this.cueDamageTaken = false;
+            this.damageTakenTime = time;
+        }
+        if (this.damageTakenTime !== 0) {
+            const iFrameTime = 1500;
+            const blinkDuration = 150;
+            const timeSinceBlinkStart = Math.round(time - this.damageTakenTime);
+            if (timeSinceBlinkStart > iFrameTime) {
+                // End iframes
+                this.endIFrames();
+            } else {
+                // Handle blink
+                const spot = timeSinceBlinkStart % blinkDuration;
+                const dim = spot / blinkDuration < 0.5;
+                if (dim) {
+                    this.sprite.alpha = 0.5;
+                } else {
+                    this.sprite.alpha = 1;
+                }
+            }
         }
 
         // Handle input
@@ -411,20 +463,22 @@ export class BatPlayer {
             }
 
             // Handle animation
+            const lowEnergyBreakpoint = this.maxEnergy / 2;
+            const lowestEnergyBreakpoint = this.maxEnergy / 4;
             const anim = (() => {
                 if (isDashing) {
                     if (nearFood) return OPEN_MOUTH_PANIC_ANIM;
                     if (this.chewing) return CHEWING_PANIC_ANIM;
                     return PANICKED_ANIM
                 }
-                if (nearFood) return OPEN_MOUTH_ANIM;
+                if (nearFood && this.energy > lowEnergyBreakpoint) return OPEN_MOUTH_ANIM;
                 if (this.chewing) {
-                    if (this.energy < this.maxEnergy / 4) return CHEWING_LOWEST_ENERGY_ANIM;
-                    if (this.energy < this.maxEnergy / 2) return CHEWING_LOW_ENERGY_ANIM;
+                    if (this.energy < lowestEnergyBreakpoint) return CHEWING_LOWEST_ENERGY_ANIM;
+                    if (this.energy < lowEnergyBreakpoint) return CHEWING_LOW_ENERGY_ANIM;
                     return CHEWING_ANIM;
                 }
-                if (this.energy < this.maxEnergy / 4) return LOWEST_ENERGY_ANIM;
-                if (this.energy < this.maxEnergy / 2) return LOW_ENERGY_ANIM;
+                if (this.energy < lowestEnergyBreakpoint) return LOWEST_ENERGY_ANIM;
+                if (this.energy < lowEnergyBreakpoint) return LOW_ENERGY_ANIM;
                 return IDLE_ANIM;
             })();
             const currentAnimFrame = this.sprite.anims.currentFrame !== null ? (this.sprite.anims.currentFrame.index % ANIM_LENGTH) : null;
@@ -438,10 +492,10 @@ export class BatPlayer {
             const speed = getScreenBasedSpeed(this.scene, isDashing ? this.dashSpeed : this.baseSpeed);
             
             // Horizontal movement
-            if (isMovingLeft) {
+            if (isMovingLeft || (this.sprite.flipX && isDashing)) {
                 this.sprite.setFlipX(true);
                 this.sprite.setVelocityX(-speed);
-            } else if (isMovingRight) {
+            } else if (isMovingRight || (!this.sprite.flipX && isDashing)) {
                 this.sprite.setFlipX(false);
                 this.sprite.setVelocityX(speed);
             } else {
@@ -472,11 +526,7 @@ export class BatPlayer {
             if (this.toot) {
                 this.toot.x = this.sprite.x;
                 this.toot.y = this.sprite.y;
-                if (isMovingLeft) {
-                    this.toot.setFlipX(true);
-                } else if (isMovingRight) {
-                    this.toot.setFlipX(false);
-                }
+                this.toot.setFlipX(this.sprite.flipX);
             }
         }
     }

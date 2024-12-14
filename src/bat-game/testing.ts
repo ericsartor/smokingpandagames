@@ -2,6 +2,7 @@ import { Phaser } from './barrel';
 import { BatPlayer } from './entities/bat';
 import { Fish } from './entities/fish';
 import { Fly } from './entities/fly';
+import { Frog } from './entities/frog';
 import { Sheep } from './entities/sheep';
 import { Water } from './entities/water';
 import { ExtendedSprite } from './types/util';
@@ -10,7 +11,7 @@ import { getCameraBox, getScreenBasedPixels, getScreenBasedSpeed, iterateGroupCh
 const SHEEP_SCALE = 0.1;
 const SHEEP_SPEED_RANGE_MIN = 0.2;
 const SHEEP_SPEED_RANGE_MAX = 0.7;
-const SHEEP_SPAWN_RATE = 700;
+const SHEEP_SPAWN_RATE = 1500;
 
 type Sprite = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
@@ -37,6 +38,8 @@ export class Testing extends Phaser.Scene {
     lastFishTime = 0;
     fish: Fish[] = []
 
+    frog: Frog | null = null;
+
     food: ExtendedSprite[] = [];
     foodGroup: Phaser.GameObjects.Group | null = null;
 
@@ -57,7 +60,8 @@ export class Testing extends Phaser.Scene {
 
         // Set up background
         const sky = this.add.image(0, 0, 'sky');
-        sky.setDepth(-Infinity)
+        sky.setDepth(-Infinity);
+        sky.width = getScreenBasedPixels(this, 1, 'width');
 
         // Create platform group
         const platformGroup = this.add.group();
@@ -102,8 +106,8 @@ export class Testing extends Phaser.Scene {
             food: this.food,
             foodGroup,
             energyPerFood: 150,
-            maxEnergy: 1000,
-            energyLossPerSecond: 250,
+            maxEnergy: 2000,
+            energyLossPerSecond: 100,
         });
 
         // Set up camera
@@ -116,16 +120,8 @@ export class Testing extends Phaser.Scene {
         this.water = new Water(this, 0, 0);
         this.water.registerSplashCollision(this.player.sprite);
 
-        // Set up collision for sheep and platforms, also sheep and player
+        // Set up collision for sheep and platforms
         this.physics.add.collider(this.sheeps, this.platforms);
-        this.player.colliders.push(
-            this.physics.add.collider(this.sheeps, this.player.sprite, (sheep) => {
-                const sprite = sheep as Sprite;
-                if (this.hitSheepBuffer.has(sprite)) return;
-                this.hitCount++;
-                this.hitSheepBuffer.add(sprite);
-            })
-        );
 
         // Set up energy bar
         const padding = 10;
@@ -172,6 +168,10 @@ export class Testing extends Phaser.Scene {
         );
         this.dashBar.setOrigin(1, 0);
 
+        this.frog = new Frog(this, 0, getScreenBasedPixels(this, 0.42, 'height'), {
+            scale: 0.07,
+        });
+
     }
 
     lastSheepTime = 0;
@@ -207,9 +207,36 @@ export class Testing extends Phaser.Scene {
                 this.water.registerSplashCollision(sheep.sprite);
             }
 
+            // Set up sheep collision with player
+            let collider: Phaser.Physics.Arcade.Collider | null = null;
+            collider = this.physics.add.collider(sheep.sprite, this.player.sprite, () => {
+                if (!this.player) return;
+                const playerBodyDiameter = this.player.sprite.body.height;
+                const playerRadius = playerBodyDiameter / 2;
+                const sheepBoxX = sheep.sprite.body.x;
+                const playerBoxX = this.player.sprite.body.x;
+                const sheepBoxY = sheep.sprite.body.y;
+                const playerBoxY = this.player.sprite.body.y;
+                const sheepVelocityX = sheep.sprite.body.velocity.x;
+                const sheepVelocityY = sheep.sprite.body.velocity.y;
+
+                const playerTopY = playerBoxY - playerRadius;
+                const percentY = Math.abs((((sheepBoxY - playerTopY) / (playerBodyDiameter)) - 0.5) * 2);
+                sheep.sprite.setVelocityX(-(sheepVelocityX * percentY));
+
+                const playerLeftX = playerBoxX - playerRadius;
+                const percentX = Math.abs((((sheepBoxX - playerLeftX) / (playerBodyDiameter)) - 0.5) * 2);
+                sheep.sprite.setVelocityY(-(sheepVelocityY * percentX));
+                
+                // Remove collision
+                if (collider)this.physics.world.removeCollider(collider);
+            });
+            if (collider) this.player.colliders.push(collider);
+
             // Track sheep
             this.sheeps.add(sheep.sprite);
             this.lastSheepTime = time;
+            this.player.registerDamageSprite(sheep.sprite, 50, false);
         }
     }
     cullSheep() {
@@ -240,6 +267,32 @@ export class Testing extends Phaser.Scene {
             this.food.push(food);
             this.foodGroup.add(food.sprite);
         }
+    }
+
+    createFish(time :number) {
+        this.lastFishTime = time;
+        const lastFish = this.fish[this.fish.length - 1];
+        const camBox = getCameraBox(this);
+        const direction = lastFish?.sprite.x > camBox.x ? 'right' : 'left';
+        const depth = lastFish?.depth === 0 ? -1 : 0;
+        const fishX = direction === 'right'
+            ? Phaser.Math.Between(camBox.left, camBox.left + camBox.width * 0.25)
+            : Phaser.Math.Between(camBox.right - camBox.width * 0.25, camBox.right);
+        const fishY = getScreenBasedPixels(this, 0.54, 'height')
+        const fish = new Fish(this, fishX, fishY, {
+            upTime: 2,
+            downTime: 2,
+            stayTime: 0.1,
+            startTime: time,
+            direction,
+            depth,
+            color: 'yellow',
+            spitHandler: (spit: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => {
+                if (!this.player) return;
+                this.player.registerDamageSprite(spit, 25, true);
+            },
+        });
+        this.fish.push(fish);
     }
 
     updateEnergyBar() {
@@ -288,25 +341,23 @@ export class Testing extends Phaser.Scene {
         this.hitMissText?.setText(`Hits: ${this.hitCount}, Misses: ${this.missCount}`);
 
         // Create fish
-        if (time - this.lastFishTime > 1000) {
-            this.lastFishTime = time;
-            const direction = Math.random() > 0.5 ? 'right' : 'left';
-            const camBox = getCameraBox(this);
-            const fishX = direction === 'right'
-                ? Phaser.Math.Between(camBox.left, camBox.left + camBox.width * 0.25)
-                : Phaser.Math.Between(camBox.right - camBox.width * 0.25, camBox.right);
-            const fishY = getScreenBasedPixels(this, 0.54, 'height')
-            this.fish.push(new Fish(this, fishX, fishY, {
-                upTime: 2,
-                downTime: 2,
-                stayTime: 0.1,
-                startTime: time,
-                direction,
-                color: 'yellow',
-            }));
+        if (time - this.lastFishTime > 2000) {
+            this.createFish(time);
         }
         if (this.fish && this.player) {
             this.fish = this.fish.filter((f) => !f.done);
+        }
+
+        // Move frog
+        if (this.frog) {
+            const frogInterval = 12000;
+            let position = (time % frogInterval) / frogInterval;
+            if (position > 0.5) {
+                position = 0.5 - (position - 0.5);
+            }
+            position = position * 2;
+            const trackWidth = getScreenBasedPixels(this, 0.8, 'width');
+            this.frog.moveFrogX(position * trackWidth - (trackWidth / 2));
         }
     }
 
