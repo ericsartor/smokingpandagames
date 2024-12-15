@@ -1,4 +1,3 @@
-import { CHARACTER_SCALE } from "../data";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera } from "../utils";
 

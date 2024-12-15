@@ -105,9 +105,6 @@ registerCreateFunc((scene: Phaser.Scene) => {
     });
 });
 
-type FrogOptions = {
-    scale: number;
-};
 export class Frog {
 
     scene: Phaser.Scene;
@@ -118,7 +115,7 @@ export class Frog {
     lilyPadOffset: number;
     lastTongue = 0;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, options: FrogOptions) {
+    constructor(scene: Phaser.Scene, x: number, y: number) {
         // Store scene
         this.scene = scene;
 

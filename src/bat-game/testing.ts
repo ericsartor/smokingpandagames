@@ -197,9 +197,7 @@ export class Testing extends Phaser.Scene {
         );
         this.dashBar.setOrigin(1, 0);
 
-        this.frog = new Frog(this, 0, getScreenBasedPixels(this, 0.39, 'height'), {
-            scale: 0.07,
-        });
+        this.frog = new Frog(this, 0, getScreenBasedPixels(this, 0.39, 'height'));
 
     }
 
