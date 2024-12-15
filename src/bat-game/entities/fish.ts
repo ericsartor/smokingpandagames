@@ -123,6 +123,9 @@ export class Fish {
 
         // Register updates
         scene.events.on('update', this.update, this);
+        scene.events.on('shutdown', () => {
+            scene.events.off('update', this.update);
+        });
 
         // Create fish sprite
         this.sprite = scene.add.sprite(x, y, fishConfig.spritesheetKey);

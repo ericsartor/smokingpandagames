@@ -41,6 +41,9 @@ export class Sheep {
 
         // Register updates
         scene.events.on('update', this.update, this);
+        scene.events.on('shutdown', () => {
+            scene.events.off('update', this.update);
+        });
 
         // Set sprite up
         this.sprite = scene.physics.add.sprite(0, 0, 'sprite-sheep-left', 0);

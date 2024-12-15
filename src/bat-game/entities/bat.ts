@@ -302,6 +302,9 @@ export class BatPlayer {
 
         // Register updates
         scene.events.on('update', this.update, this);
+        scene.events.on('shutdown', () => {
+            scene.events.off('update', this.update);
+        });
 
         // Create physics sprite
         this.sprite = this.scene.physics.add.sprite(0, 0, IDLE_SHEET, 0);

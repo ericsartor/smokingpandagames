@@ -123,6 +123,9 @@ export class Frog {
 
         // Register updates
         scene.events.on('update', this.update, this);
+        scene.events.on('shutdown', () => {
+            scene.events.off('update', this.update);
+        });
 
         // Create lily pad sprite
         this.lilyPadOffset = getScreenBasedPixels(this.scene, 0, 'width');

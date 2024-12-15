@@ -54,6 +54,9 @@ export class Water {
 
         // Register updates
         scene.events.on('update', this.update, this);
+        scene.events.on('shutdown', () => {
+            scene.events.off('update', this.update);
+        });
 
         // Create water layers
         const waterStartY = getScreenBasedPixels(this.scene, 0.42, 'height');

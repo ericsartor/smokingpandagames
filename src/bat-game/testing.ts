@@ -43,8 +43,37 @@ export class Testing extends Phaser.Scene {
     food: ExtendedSprite[] = [];
     foodGroup: Phaser.GameObjects.Group | null = null;
 
+    gameOverStartedTime = 0;
+    gameOverShowText = false;
+    gameOverStarted = false;
+
     constructor() {
         super('Testing');
+    }
+
+    init() {
+        this.player = null;
+        this.energyBar = null;
+        this.maxEnergyBarWidth = 0;
+        this.dashBar = null;
+        this.maxDashBarWidth = 0;
+        this.playerColliders = [];
+        this.sheeps = null;
+        this.sheepCount = null;
+        this.platforms = null;
+        this.hitCount = 0;
+        this.missCount = 0;
+        this.hitMissText = null;
+        this.hitSheepBuffer = new Set<Sprite>();
+        this.water = null;;
+        this.lastFishTime = 0;
+        this.fish = []
+        this.frog = null;
+        this.food = [];
+        this.foodGroup = null;
+        this.gameOverStartedTime = 0;
+        this.gameOverShowText = false;
+        this.gameOverStarted = false;
     }
 
     preload() {
@@ -106,7 +135,7 @@ export class Testing extends Phaser.Scene {
             food: this.food,
             foodGroup,
             energyPerFood: 150,
-            maxEnergy: 2000,
+            maxEnergy: 1000,
             energyLossPerSecond: 100,
         });
 
@@ -310,10 +339,31 @@ export class Testing extends Phaser.Scene {
         this.dashBar.width = percent * this.maxDashBarWidth;
     }
 
-    checkGameOver() {
+    checkGameOver(time: number) {
         if (this.player === null) return;
-        if (this.player.energy <= 0) {
-            // TODO: do game over sequence
+        if (this.player.energy <= 0 && this.gameOverStartedTime === 0) {
+            this.gameOverStartedTime = time; 
+        }
+        if (this.gameOverStartedTime !== 0) {
+            const fadeDuration = 2000;
+            if (!this.gameOverStarted) {
+                this.gameOverStarted = true;
+                const rectangle = this.add.rectangle(0, 0, this.game.canvas.width, this.game.canvas.height, 0x000000).setDepth(10);
+                rectangle.alpha = 0;
+                this.tweens.add({
+                    targets: rectangle,
+                    alpha: 1, // Set the final alpha value to 1 (fully opaque)
+                    duration: fadeDuration, // Fade-in duration in milliseconds
+                    ease: 'Linear' // Linear easing for a smooth fade-in
+                });
+            }
+            if (!this.gameOverShowText && time - this.gameOverStartedTime > fadeDuration) {
+                this.gameOverShowText = true;
+                this.add.text(0, 0, 'Game Over').setOrigin(0.5, 0.5).setDepth(10);
+                this.add.text(0, getScreenBasedPixels(this, 0.1, 'height'), 'Play Again').setInteractive().setDepth(10).on('pointerdown', () => {
+                    this.scene.restart();
+                });
+            }
         }
     }
 
@@ -359,6 +409,8 @@ export class Testing extends Phaser.Scene {
             const trackWidth = getScreenBasedPixels(this, 0.8, 'width');
             this.frog.moveFrogX(position * trackWidth - (trackWidth / 2));
         }
+
+        this.checkGameOver(time);
     }
 
 }
