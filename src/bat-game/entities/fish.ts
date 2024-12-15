@@ -1,3 +1,4 @@
+import { CHARACTER_SCALE } from "../data";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { getScreenBasedPixels, getScreenBasedSpeed, scaleBasedOnCamera } from "../utils";
 
@@ -147,7 +148,7 @@ export class Fish {
         this.sprite.setRotation(options.direction === 'right' ? -0.453786 : 0.453786);
 
         // Set scale on fish
-        scaleBasedOnCamera(scene, this.sprite, 0.08);
+        scaleBasedOnCamera(scene, this.sprite, CHARACTER_SCALE);
 
         // Start animation
         this.sprite.anims.play(fishConfig.animName);
@@ -169,6 +170,13 @@ export class Fish {
     }
 
     update(time: number) {
+
+        if (this.done) {
+            this.scene.events.on('shutdown', () => {
+                this.scene.events.off('update', this.update);
+            });
+            return;
+        }
 
         const totalTime = this.upTime + this.stayTime + this.downTime;
         

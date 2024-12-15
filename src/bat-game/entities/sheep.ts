@@ -1,3 +1,4 @@
+import { CHARACTER_SCALE } from "../data";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { scaleBasedOnCamera } from "../utils";
 
@@ -49,7 +50,7 @@ export class Sheep {
         this.sprite = scene.physics.add.sprite(0, 0, 'sprite-sheep-left', 0);
         this.sprite.x = x;
         this.sprite.y = y;
-        scaleBasedOnCamera(this.scene, this.sprite, options.size);
+        scaleBasedOnCamera(this.scene, this.sprite, CHARACTER_SCALE);
 
         // Adjust hitbox
         this.sprite.body.setCircle(this.sprite.width * 0.38, this.sprite.width * 0.12, this.sprite.height * 0.2);

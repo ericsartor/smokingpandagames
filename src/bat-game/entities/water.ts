@@ -1,3 +1,4 @@
+import { CHARACTER_SCALE } from "../data";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { getScreenBasedPixels, getScreenBasedSpeed, iterateGroupChildren, scaleBasedOnCamera, scaleTileBasedOnCamera } from "../utils";
 
@@ -125,8 +126,8 @@ export class Water {
             collider.destroy();
         }
         const x = sprite.x + (0.5 - sprite.originX) * sprite.width;
-        const splash = this.scene.physics.add.sprite(x, this.hitbox.y - getScreenBasedPixels(this.scene, 0.02, 'height'), SPLASH_SHEET);
-        scaleBasedOnCamera(this.scene, splash, 0.15);
+        const splash = this.scene.physics.add.sprite(x, this.hitbox.y - getScreenBasedPixels(this.scene, 0.08, 'height'), SPLASH_SHEET);
+        scaleBasedOnCamera(this.scene, splash, 0.3);
         splash.body.setAllowGravity(false);
         splash.setDepth(-1);
         splash.anims.play(SPLASH_ANIM);

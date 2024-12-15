@@ -1,3 +1,4 @@
+import { CHARACTER_SCALE } from "../data";
 import { registerCreateFunc, registerLoadFunc } from "../loading";
 import { getScreenBasedPixels, getScreenBasedSpeed, scaleBasedOnCamera } from "../utils";
 
@@ -127,14 +128,16 @@ export class Frog {
             scene.events.off('update', this.update);
         });
 
+        // Set scale
+        this.scale = CHARACTER_SCALE;
+
         // Create lily pad sprite
         this.lilyPadOffset = getScreenBasedPixels(this.scene, 0, 'width');
         this.lilyPad = this.scene.physics.add.sprite(0, 0, LILY_PAD_SHEET, 0);
         this.lilyPad.anims.play(LILY_PAD_ANIM);
         this.lilyPad.body.setAllowGravity(false);
         this.lilyPad.x = x + this.lilyPadOffset;
-        this.lilyPad.y = y + getScreenBasedPixels(this.scene, 0.035, 'height');
-        this.scale = options.scale * 1;
+        this.lilyPad.y = y + getScreenBasedPixels(this.scene, 0.03, 'width');
         scaleBasedOnCamera(this.scene, this.lilyPad, this.scale);
 
         // Create frog sprite
@@ -144,7 +147,6 @@ export class Frog {
         this.sprite.body.setCircle(this.sprite.width * 0.25, this.sprite.width * 0.25, this.sprite.height * 0.06);
         this.sprite.x = x;
         this.sprite.y = y;
-        this.scale = options.scale;
         scaleBasedOnCamera(this.scene, this.sprite, this.scale);
 
     }

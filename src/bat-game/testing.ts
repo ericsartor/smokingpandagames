@@ -197,7 +197,7 @@ export class Testing extends Phaser.Scene {
         );
         this.dashBar.setOrigin(1, 0);
 
-        this.frog = new Frog(this, 0, getScreenBasedPixels(this, 0.42, 'height'), {
+        this.frog = new Frog(this, 0, getScreenBasedPixels(this, 0.39, 'height'), {
             scale: 0.07,
         });
 
@@ -344,7 +344,7 @@ export class Testing extends Phaser.Scene {
         if (this.player.energy <= 0 && this.gameOverStartedTime === 0) {
             this.gameOverStartedTime = time; 
         }
-        if (this.gameOverStartedTime !== 0) {
+        if (this.gameOverStartedTime !== 0 && time - this.gameOverStartedTime > 2000) {
             const fadeDuration = 2000;
             if (!this.gameOverStarted) {
                 this.gameOverStarted = true;
@@ -357,7 +357,7 @@ export class Testing extends Phaser.Scene {
                     ease: 'Linear' // Linear easing for a smooth fade-in
                 });
             }
-            if (!this.gameOverShowText && time - this.gameOverStartedTime > fadeDuration) {
+            if (!this.gameOverShowText && time - this.gameOverStartedTime > fadeDuration + 2000) {
                 this.gameOverShowText = true;
                 this.add.text(0, 0, 'Game Over').setOrigin(0.5, 0.5).setDepth(10);
                 this.add.text(0, getScreenBasedPixels(this, 0.1, 'height'), 'Play Again').setInteractive().setDepth(10).on('pointerdown', () => {
