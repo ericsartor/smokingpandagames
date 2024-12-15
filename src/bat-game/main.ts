@@ -1,4 +1,5 @@
 import { LoadingScene, scenes, setStartingScene } from "./loading";
+import { MainMenuScene } from "./main-menu";
 import { Testing } from "./testing";
 
 const env = location.hostname === 'smokingpandagames.com' ? 'prod' : 'dev';
@@ -29,6 +30,7 @@ export const startGame = () => {
         type: Phaser.AUTO,
         scene: [
             LoadingScene,
+            MainMenuScene,
             ...scenes,
         ],
         backgroundColor: '#ffffff',
