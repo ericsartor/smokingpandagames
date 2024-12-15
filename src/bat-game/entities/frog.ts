@@ -125,13 +125,13 @@ export class Frog {
         scene.events.on('update', this.update, this);
 
         // Create lily pad sprite
-        this.lilyPadOffset = getScreenBasedPixels(this.scene, 0.01, 'width');
+        this.lilyPadOffset = getScreenBasedPixels(this.scene, 0, 'width');
         this.lilyPad = this.scene.physics.add.sprite(0, 0, LILY_PAD_SHEET, 0);
         this.lilyPad.anims.play(LILY_PAD_ANIM);
         this.lilyPad.body.setAllowGravity(false);
         this.lilyPad.x = x + this.lilyPadOffset;
         this.lilyPad.y = y + getScreenBasedPixels(this.scene, 0.035, 'height');
-        this.scale = options.scale * 1.5;
+        this.scale = options.scale * 1;
         scaleBasedOnCamera(this.scene, this.lilyPad, this.scale);
 
         // Create frog sprite
@@ -152,10 +152,8 @@ export class Frog {
     }
 
     update(time: number) {
-        const speed = getScreenBasedSpeed(this.scene, 0.0001);
-        // const speedXSine = speed * (Math.sin(timeElapsed * 0.005));
+        const speed = getScreenBasedSpeed(this.scene, 0.0003);
         const speedYSine = speed * (Math.sin(time * 0.005));
-        // this.sprite.x += speedXSine;
         this.sprite.y += speedYSine;
         this.lilyPad.y += speedYSine;
 
