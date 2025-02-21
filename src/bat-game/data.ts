@@ -1,1 +1,0 @@
-export const CHARACTER_SCALE = 0.11;

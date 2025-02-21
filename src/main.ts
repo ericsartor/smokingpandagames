@@ -1,17 +1,12 @@
-// import { startGame } from "./practice";
-// import { startGame } from "./test";
-// import { startGame } from "./practice2";
-import { startGame } from "./bat-game/main";
-
 const games: {
   name: string;
   credits: string;
-  start: Function;
+  path: string;
 }[] = [
   {
-    name: 'Bat Game',
-    credits: 'Programming / Game Design by Eric Sartor, Art / Game Design by Bridget Fae',
-    start: startGame,
+    name: 'Babs the Bat',
+    credits: 'Programming / Game Design by Eric Sartor, Art / Sound / Game Design by Bridget Fae, Music / Sound / Game Design by Ryan Ulch',
+    path: '/babs/build.html',
   }
 ];
 
@@ -23,8 +18,7 @@ games.forEach((game) => {
     <button style="margin-right: 12px;">Play</button>${game.name} - ${game.credits}
   `;
   div.children[0].addEventListener('click', () => {
-    document.body.innerHTML = '';
-    game.start();
+    location.assign(game.path);
   });
   document.body.appendChild(div);
 });
