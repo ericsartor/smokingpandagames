@@ -18,7 +18,7 @@ const games: {
 
 document.body.innerHTML = `
   <h1>Smoking Panda Games</h1>
-  <p>Games made by Eric Sartor, with the help and support of some other pretty cool people!</p>
+  <p>Games made by Eric Sartor, with the help and support of some other pretty cool people!!</p>
   <div id="game-list"></div>
 `;
 
