@@ -8,9 +8,9 @@ const games: {
     name: 'Babs the Bat',
     description: 'Fly around eating flies for as long as you can, dodging falling sheep, spitting fish, and a rude frog.',
     credits: [
-      'Eric Sartor: Programming / Game Design',
-      'Bridget Fae: Art / Sound / Game Design',
-      'Ryan Ulch: Music / Sound / Game Design',
+      'Eric Sartor: Programming, Game Design',
+      'Bridget Fae: Art, Sound, Game Design',
+      'Ryan Ulch: Music, Sound, Game Design',
     ],
     path: '/babs/build.html',
   }
